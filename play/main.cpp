@@ -1,6 +1,6 @@
-#include <harmony/sample.hpp>
+#include <iostream>
 
 int main() {
-  harmony::Greet();
+  std::cout << "hello world!" << std::endl;
   return 0;
 }

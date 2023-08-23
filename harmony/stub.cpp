@@ -1,7 +1,5 @@
-#pragma once
-
 namespace harmony {
 
-void Greet();
+int x;
 
 } // namespace harmony
