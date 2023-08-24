@@ -20,7 +20,13 @@ class TaskPromise {
     }
 
     auto await_suspend(std::coroutine_handle<TaskPromise> h) noexcept {
-      return h.promise().ReleaseContinuation();
+      auto continuation = h.promise().ReleaseContinuation();
+
+      if (h.promise().OwnsLifetime()) {
+        h.destroy();
+      }
+
+      return continuation;
     }
 
     void await_resume() noexcept {
@@ -32,8 +38,7 @@ class TaskPromise {
     return Task<T>{std::coroutine_handle<TaskPromise<T>>::from_promise(*this)};
   }
 
-  // TODO: change to lazy initialization
-  std::suspend_never initial_suspend() noexcept {
+  std::suspend_always initial_suspend() noexcept {
     return {};
   }
 
@@ -45,11 +50,11 @@ class TaskPromise {
     result_ = tl::unexpected<std::exception_ptr>(std::current_exception());
   }
 
- public:
   FinalAwaiter final_suspend() noexcept {
     return {};
   }
 
+ private:
   void SetContinuation(std::coroutine_handle<> continuation) {
     continuation_ = std::move(continuation);
   }
@@ -76,9 +81,20 @@ class TaskPromise {
     std::rethrow_exception(expected.error());
   }
 
+  void TransferLifetime() {
+    owns_lifetime_ = true;
+  }
+
+  bool OwnsLifetime() const {
+    return owns_lifetime_;
+  }
+
  private:
+  friend class Task<T>;
+
   std::optional<tl::expected<T, std::exception_ptr>> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
+  bool owns_lifetime_{false};
 };
 
 }  // namespace harmony::coro

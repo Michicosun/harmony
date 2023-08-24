@@ -1,8 +1,10 @@
+#include <cstddef>
+#include <variant>
+
 #include <fmt/core.h>
 
-#include <cstddef>
 #include <harmony/coro/core/task.hpp>
-#include <variant>
+#include <harmony/coro/run/detach.hpp>
 
 harmony::coro::Task<std::monostate> boo(size_t i) {
   fmt::println("run: #{}", i);
@@ -18,6 +20,6 @@ harmony::coro::Task<std::monostate> foo() {
 }
 
 int main() {
-  foo();
+  harmony::coro::Detach(foo());
   return 0;
 }

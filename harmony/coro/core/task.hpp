@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <coroutine>
+#include <utility>
 
 #include <harmony/coro/core/task_promise.hpp>
 
@@ -17,10 +18,12 @@ class Task {
   }
 
   ~Task() {
-    if (coro_.done()) {
-      coro_.destroy();
-    } else {
+    if (coro_ && !coro_.done()) {
       std::terminate();
+    }
+
+    if (coro_ && coro_.done()) {
+      coro_.destroy();
     }
   }
 
@@ -35,6 +38,12 @@ class Task {
 
   T await_resume() noexcept {
     return coro_.promise().UnwrapResult();
+  }
+
+ public:
+  std::coroutine_handle<TaskPromise<T>> ReleaseCoroutine() {
+    coro_.promise().TransferLifetime();
+    return std::exchange(coro_, {});
   }
 
  private:
