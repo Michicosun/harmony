@@ -1,11 +1,30 @@
-# locate folder
-get_filename_component(HARMONY_INCLUDE_PATH ".." ABSOLUTE)
+# --------------------------------------------------------------------
 
-# find all source files
-file(GLOB_RECURSE HARMONY_SRCS "*.cpp")
+set(LIB_TARGET harmony)
 
-# add library
-add_library(harmony STATIC ${HARMONY_SRCS})
+# --------------------------------------------------------------------
 
-target_include_directories(harmony PUBLIC ${HARMONY_INCLUDE_PATH})
-target_link_libraries(harmony PUBLIC pthread)
+# Sources & Includes
+
+get_filename_component(LIB_INCLUDE_PATH ".." ABSOLUTE)
+get_filename_component(LIB_PATH "." ABSOLUTE)
+
+file(GLOB_RECURSE LIB_CXX_SOURCES ${LIB_PATH}/*.cpp)
+file(GLOB_RECURSE LIB_HEADERS ${LIB_PATH}/*.hpp)
+
+add_library(${LIB_TARGET} STATIC ${LIB_CXX_SOURCES} ${LIB_HEADERS})
+target_include_directories(${LIB_TARGET} PUBLIC ${LIB_INCLUDE_PATH})
+
+# --------------------------------------------------------------------
+
+# Dependencies
+
+set(LIB_DEPENDENCIES
+        pthread
+        expected
+        fmt)
+
+Log("Dependencies: ${LIB_DEPENDENCIES}")
+
+target_link_libraries(${LIB_TARGET} PUBLIC ${LIB_DEPENDENCIES})
+
