@@ -4,7 +4,6 @@
 #include <coroutine>
 
 #include <harmony/coro/core/task_promise.hpp>
-#include <stdexcept>
 
 namespace harmony::coro {
 
