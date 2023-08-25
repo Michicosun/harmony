@@ -60,7 +60,7 @@ class TaskPromise {
   }
 
   std::coroutine_handle<> ReleaseContinuation() {
-    return std::move(continuation_);
+    return std::exchange(continuation_, {});
   }
 
   bool HasResult() const {
