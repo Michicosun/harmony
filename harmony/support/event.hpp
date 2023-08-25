@@ -4,7 +4,7 @@
 
 namespace harmony::support {
 
-class SPSCEvent {
+class MPSCEvent {
   enum States : uint64_t {
     Empty = 0,
     Completed = 1,

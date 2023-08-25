@@ -10,7 +10,7 @@
 
 TEST(SpinLockTest, Simple) {
   harmony::threads::SpinLock lock;
-  harmony::support::SPSCEvent event;
+  harmony::support::MPSCEvent event;
   std::vector<std::thread> threads;
 
   const size_t spin_count = 10'000;

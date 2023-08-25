@@ -4,18 +4,18 @@
 
 namespace harmony::support {
 
-void SPSCEvent::Wait() {
+void MPSCEvent::Wait() {
   threads::futex::Wait(completed_, States::Empty);
 }
 
-void SPSCEvent::Complete() {
+void MPSCEvent::Complete() {
   auto wake_key = threads::futex::PrepareWake(completed_);
 
   completed_.store(States::Completed);
   threads::futex::WakeOne(wake_key);
 }
 
-void SPSCEvent::Reset() {
+void MPSCEvent::Reset() {
   completed_.store(States::Empty);
 }
 
