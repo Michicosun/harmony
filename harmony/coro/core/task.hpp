@@ -49,11 +49,6 @@ class Task {
   }
 
  public:
-  std::coroutine_handle<promise_type> ReleaseCoroutine() {
-    coro_.promise().TransferLifetime();
-    return std::exchange(coro_, {});
-  }
-
   auto operator co_await() const& noexcept {
     return TaskAwaiter{coro_};
   }

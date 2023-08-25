@@ -21,14 +21,8 @@ class TaskPromise {
       return false;
     }
 
-    auto await_suspend(handle h) noexcept {
-      auto continuation = h.promise().ReleaseContinuation();
-
-      if (h.promise().OwnsLifetime()) {
-        h.destroy();
-      }
-
-      return continuation;
+    auto await_suspend(handle coroutine) noexcept {
+      return coroutine.promise().ReleaseContinuation();
     }
 
     void await_resume() noexcept {
@@ -83,20 +77,11 @@ class TaskPromise {
     std::rethrow_exception(expected.error());
   }
 
-  void TransferLifetime() {
-    owns_lifetime_ = true;
-  }
-
-  bool OwnsLifetime() const {
-    return owns_lifetime_;
-  }
-
  private:
   friend class Task<T>;
 
   std::optional<tl::expected<T, std::exception_ptr>> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
-  bool owns_lifetime_{false};
 };
 
 }  // namespace harmony::coro

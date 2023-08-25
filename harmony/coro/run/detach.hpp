@@ -1,12 +1,13 @@
 #pragma once
 
-#include <harmony/coro/core/task.hpp>
+#include <harmony/coro/run/impl/detach_task.hpp>
 
 namespace harmony::coro {
 
-template <class T>
-inline void Detach(Task<T>&& task) {
-  task.ReleaseCoroutine().resume();
+template <concepts::Awaitable awaitable>
+inline void Detach(awaitable&& object) {
+  auto task = CreateDetachTask(std::forward<awaitable>(object));
+  task.Start();
 }
 
 }  // namespace harmony::coro

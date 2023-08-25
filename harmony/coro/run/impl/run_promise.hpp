@@ -14,7 +14,7 @@ class RunTask;
 
 template <class T>
 class RunTaskPromise {
-  using handle = std::coroutine_handle<RunTaskPromise<T>>;
+  using handle = std::coroutine_handle<RunTaskPromise>;
 
   struct FinalAwaiter {
     bool await_ready() noexcept {
