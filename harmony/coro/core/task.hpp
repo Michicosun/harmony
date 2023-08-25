@@ -10,6 +10,27 @@ namespace harmony::coro {
 
 template <class T>
 class Task {
+  struct TaskAwaiter {
+    explicit TaskAwaiter(std::coroutine_handle<TaskPromise<T>> h) noexcept
+        : coro_(h) {
+    }
+
+    bool await_ready() noexcept {
+      return !coro_ || coro_.done();
+    }
+
+    auto await_suspend(std::coroutine_handle<> continuation) noexcept {
+      coro_.promise().SetContinuation(std::move(continuation));
+      return coro_;
+    }
+
+    T await_resume() noexcept {
+      return coro_.promise().UnwrapResult();
+    }
+
+    std::coroutine_handle<TaskPromise<T>> coro_;
+  };
+
  public:
   using promise_type = TaskPromise<T>;
 
@@ -27,23 +48,14 @@ class Task {
     }
   }
 
-  bool await_ready() noexcept {
-    return coro_.promise().HasResult();
-  }
-
-  auto await_suspend(std::coroutine_handle<> continuation) noexcept {
-    coro_.promise().SetContinuation(std::move(continuation));
-    return coro_;
-  }
-
-  T await_resume() noexcept {
-    return coro_.promise().UnwrapResult();
-  }
-
  public:
-  std::coroutine_handle<TaskPromise<T>> ReleaseCoroutine() {
+  std::coroutine_handle<promise_type> ReleaseCoroutine() {
     coro_.promise().TransferLifetime();
     return std::exchange(coro_, {});
+  }
+
+  auto operator co_await() const& noexcept {
+    return TaskAwaiter{coro_};
   }
 
  private:
@@ -54,7 +66,7 @@ class Task {
   }
 
  private:
-  std::coroutine_handle<TaskPromise<T>> coro_;
+  std::coroutine_handle<promise_type> coro_;
 };
 
 }  // namespace harmony::coro

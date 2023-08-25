@@ -1,34 +1,28 @@
 #pragma once
 
 #include <coroutine>
-#include <exception>
 #include <optional>
-#include <utility>
 
 #include <tl/expected.hpp>
+
+#include <harmony/support/event.hpp>
 
 namespace harmony::coro {
 
 template <class T>
-class Task;
+class RunTask;
 
 template <class T>
-class TaskPromise {
-  using handle = std::coroutine_handle<TaskPromise>;
+class RunTaskPromise {
+  using handle = std::coroutine_handle<RunTaskPromise<T>>;
 
   struct FinalAwaiter {
     bool await_ready() noexcept {
       return false;
     }
 
-    auto await_suspend(handle h) noexcept {
-      auto continuation = h.promise().ReleaseContinuation();
-
-      if (h.promise().OwnsLifetime()) {
-        h.destroy();
-      }
-
-      return continuation;
+    void await_suspend(handle coroutine) const noexcept {
+      coroutine.promise().event_->Complete();
     }
 
     void await_resume() noexcept {
@@ -36,8 +30,10 @@ class TaskPromise {
   };
 
  public:
-  Task<T> get_return_object() noexcept {
-    return Task<T>(handle::from_promise(*this));
+  RunTaskPromise() = default;
+
+  RunTask<T> get_return_object() noexcept {
+    return RunTask<T>(handle::from_promise(*this));
   }
 
   std::suspend_always initial_suspend() noexcept {
@@ -52,21 +48,14 @@ class TaskPromise {
     result_ = tl::unexpected<std::exception_ptr>(std::current_exception());
   }
 
-  FinalAwaiter final_suspend() noexcept {
-    return {};
+  auto final_suspend() noexcept {
+    return FinalAwaiter{};
   }
 
- private:
-  void SetContinuation(std::coroutine_handle<> continuation) {
-    continuation_ = std::move(continuation);
-  }
-
-  std::coroutine_handle<> ReleaseContinuation() {
-    return std::exchange(continuation_, {});
-  }
-
-  bool HasResult() const {
-    return result_.has_value();
+ public:
+  void Start(support::MPSCEvent& event) {
+    event_ = &event;
+    handle::from_promise(*this).resume();
   }
 
   T UnwrapResult() {
@@ -83,20 +72,9 @@ class TaskPromise {
     std::rethrow_exception(expected.error());
   }
 
-  void TransferLifetime() {
-    owns_lifetime_ = true;
-  }
-
-  bool OwnsLifetime() const {
-    return owns_lifetime_;
-  }
-
  private:
-  friend class Task<T>;
-
+  support::MPSCEvent* event_{nullptr};
   std::optional<tl::expected<T, std::exception_ptr>> result_;
-  std::coroutine_handle<> continuation_ = std::noop_coroutine();
-  bool owns_lifetime_{false};
 };
 
 }  // namespace harmony::coro
