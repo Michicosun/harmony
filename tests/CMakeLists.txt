@@ -12,3 +12,4 @@ endfunction()
 Log("Configuring tests")
 
 MakeTest(threads)
+MakeTest(support)
