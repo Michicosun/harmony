@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(harmony)
 
-option(HARMONY_DEVELOPER "Harmony development mode" OFF)
+option(BUILD_TESTS "Build Harmony tests" OFF)
 
 include(cmake/Logging.cmake)
 include(cmake/CCache.cmake)
@@ -20,7 +20,8 @@ include(cmake/Werror.cmake)
 
 add_subdirectory(harmony)
 
-if(HARMONY_DEVELOPER)
+if(BUILD_TESTS)
     add_subdirectory(play)
+    add_subdirectory(tests)
 endif()
 

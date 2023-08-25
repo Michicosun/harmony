@@ -24,7 +24,5 @@ set(LIB_DEPENDENCIES
         expected
         fmt)
 
-Log("Dependencies: ${LIB_DEPENDENCIES}")
-
 target_link_libraries(${LIB_TARGET} PUBLIC ${LIB_DEPENDENCIES})
 
