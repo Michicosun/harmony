@@ -2,9 +2,7 @@
 
 #include <atomic>
 
-#include <harmony/threads/futex.hpp>
-
-namespace harmony::threads::sync {
+namespace harmony::support {
 
 class SPSCEvent {
   enum States : uint64_t {
@@ -24,4 +22,4 @@ class SPSCEvent {
   std::atomic<uint32_t> completed_{States::Empty};
 };
 
-}  // namespace harmony::threads::sync
+}  // namespace harmony::support
