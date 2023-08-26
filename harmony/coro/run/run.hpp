@@ -4,11 +4,11 @@
 
 namespace harmony::coro {
 
-template <concepts::Awaitable awaitable>
-auto Run(awaitable&& object) {
+template <concepts::Awaitable Awaitable>
+auto Run(Awaitable&& object) {
   support::MPSCEvent event;
 
-  auto task = CreateRunTask(std::forward<awaitable>(object));
+  auto task = CreateRunTask(std::forward<Awaitable>(object));
   task.Start(event);
 
   event.Wait();
