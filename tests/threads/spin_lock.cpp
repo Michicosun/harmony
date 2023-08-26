@@ -4,9 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include <harmony/support/event/event.hpp>
 #include <harmony/threads/spin_lock.hpp>
-
-#include <harmony/support/event.hpp>
 
 TEST(SpinLockTest, Simple) {
   harmony::threads::SpinLock lock;

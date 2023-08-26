@@ -1,7 +1,6 @@
 #pragma once
 
 #include <harmony/coro/run/impl/run_task.hpp>
-#include <harmony/support/event.hpp>
 
 namespace harmony::coro {
 

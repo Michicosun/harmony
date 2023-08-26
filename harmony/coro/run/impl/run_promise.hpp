@@ -5,7 +5,7 @@
 
 #include <tl/expected.hpp>
 
-#include <harmony/support/event.hpp>
+#include <harmony/support/event/event.hpp>
 
 namespace harmony::coro {
 

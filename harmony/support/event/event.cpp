@@ -1,6 +1,6 @@
 #include <harmony/threads/futex.hpp>
 
-#include <harmony/support/event.hpp>
+#include <harmony/support/event/event.hpp>
 
 namespace harmony::support {
 

@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <harmony/support/event.hpp>
+#include <harmony/support/event/event.hpp>
 
 TEST(EventTest, Simple) {
   harmony::support::MPSCEvent event_1;
