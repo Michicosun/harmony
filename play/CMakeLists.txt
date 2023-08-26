@@ -1,2 +1,2 @@
 add_executable(harmony_play main.cpp)
-target_link_libraries(harmony_play harmony)
+target_link_libraries(harmony_play harmony fmt)

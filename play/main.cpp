@@ -1,45 +1,42 @@
-#include <cstddef>
-#include <variant>
-
-#include <fmt/core.h>
+#include <exception>
+#include <iostream>
 
 #include <harmony/coro/core/task.hpp>
-#include <harmony/coro/run/detach.hpp>
 #include <harmony/coro/run/run.hpp>
+#include <stdexcept>
+#include <variant>
 
-harmony::coro::Task<std::monostate> boo(size_t i) {
-  fmt::println("run: #{}", i);
+harmony::coro::Task<std::string> boo(int x) {
+  if (x % 3 == 0) {
+    throw std::runtime_error("hello");
+  }
+
+  co_return "bye";
+}
+
+harmony::coro::Task<int> foo(int x) {
+  std::cout << "running boo..." << std::endl;
+
+  std::string s = co_await boo(x);
+  std::cout << "boo return: " << s << std::endl;
+
+  co_return 10;
+}
+
+harmony::coro::Task<std::monostate> amain() {
+  try {
+    int x;
+    std::cin >> x;
+
+    co_await foo(x);
+  } catch (const std::exception& e) {
+    std::cout << "caught: " << e.what() << std::endl;
+  }
+
   co_return std::monostate{};
 }
 
-harmony::coro::Task<size_t> foo() {
-  for (size_t i = 0; i < 10; ++i) {
-    co_await boo(i);
-  }
-
-  co_return 42;
-}
-
-size_t SyncLoop() {
-  size_t x = 0;
-
-  for (size_t i = 0; i < 10; ++i) {
-    x += harmony::coro::Run(foo());
-  }
-
-  return x;
-}
-
-void RunSync(auto task) {
-  size_t x = harmony::coro::Run(task);
-  fmt::println("returned: {}", x);
-}
-
-void RunDetached(auto task) {
-  harmony::coro::Detach(std::move(task));
-}
-
 int main() {
-  fmt::println("{}", SyncLoop());
+  harmony::coro::Run(amain());
   return 0;
 }

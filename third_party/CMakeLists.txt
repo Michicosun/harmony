@@ -13,17 +13,6 @@ FetchContent_MakeAvailable(fmt)
 
 # --------------------------------------------------------------------
 
-# expected
-
-FetchContent_Declare(
-        expected
-        GIT_REPOSITORY https://github.com/TartanLlama/expected.git
-        GIT_TAG cmake_love
-)
-FetchContent_MakeAvailable(expected)
-
-# --------------------------------------------------------------------
-
 # gtest
 
 FetchContent_Declare(
