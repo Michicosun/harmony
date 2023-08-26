@@ -11,6 +11,11 @@ class ForwardListNode {
 
   void Reset() noexcept;
 
+  template <class T>
+  T* As() {
+    return static_cast<T*>(this);
+  }
+
  private:
   ForwardListNode* next_{nullptr};
 };
