@@ -37,9 +37,10 @@ class DetachTask {
   std::coroutine_handle<promise_type> coro_;
 };
 
-template <concepts::Awaitable awaitable>
-static DetachTask CreateDetachTask(awaitable&& object) {
-  co_await object;
+template <concepts::Awaitable Awaitable>
+static DetachTask CreateDetachTask(Awaitable object) {
+  auto saved_object = std::move(object);
+  co_await saved_object;
   co_return;
 }
 

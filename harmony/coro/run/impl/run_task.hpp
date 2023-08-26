@@ -40,10 +40,11 @@ class RunTask {
   std::coroutine_handle<promise_type> coro_;
 };
 
-template <concepts::Awaitable awaitable>
-static RunTask<typename traits::AwaitableTraits<awaitable>::AwaiterReturnT>
-CreateRunTask(awaitable&& object) {
-  co_return co_await object;
+template <concepts::Awaitable Awaitable,
+          class ReturnType = traits::AwaitableTraits<Awaitable>::AwaiterReturnT>
+static RunTask<ReturnType> CreateRunTask(Awaitable object) {
+  auto saved_object = std::move(object);
+  co_return co_await saved_object;
 }
 
 }  // namespace harmony::coro

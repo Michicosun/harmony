@@ -7,22 +7,22 @@
 
 namespace harmony::coro::traits {
 
-template <concepts::Awaitable awaitable, typename = void>
+template <concepts::Awaitable Awaitable, typename = void>
 struct AwaitableTraits {};
 
-template <concepts::Awaitable awaitable>
-static auto GetAwaiter(awaitable&& value) {
-  return std::forward<awaitable>(value).operator co_await();
+template <concepts::Awaitable Awaitable>
+static auto GetAwaiter(Awaitable&& value) {
+  return std::forward<Awaitable>(value).operator co_await();
 }
 
-template <concepts::Awaiter awaiter>
-static auto CompleteAwaiter(awaiter&& value) {
-  return std::forward<awaiter>(value).await_resume();
+template <concepts::Awaiter Awaiter>
+static auto CompleteAwaiter(Awaiter&& value) {
+  return std::forward<Awaiter>(value).await_resume();
 }
 
-template <concepts::Awaitable awaitable>
-struct AwaitableTraits<awaitable> {
-  using AwaiterT = decltype(GetAwaiter(std::declval<awaitable>()));
+template <concepts::Awaitable Awaitable>
+struct AwaitableTraits<Awaitable> {
+  using AwaiterT = decltype(GetAwaiter(std::declval<Awaitable>()));
   using AwaiterReturnT = decltype(CompleteAwaiter(std::declval<AwaiterT>()));
 };
 
