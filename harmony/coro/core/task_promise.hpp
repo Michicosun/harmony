@@ -2,15 +2,37 @@
 
 #include <coroutine>
 #include <exception>
-#include <optional>
 #include <utility>
 
-#include <tl/expected.hpp>
+#include <harmony/result/result.hpp>
+#include <harmony/runtime/executors/interface.hpp>
 
 namespace harmony::coro {
 
 template <class T>
 class Task;
+
+class ThisCoroType {};
+constexpr ThisCoroType kThisCoro;
+
+struct ThisCoroParameters {
+  runtime::executors::IExecutor* executor;
+};
+
+struct ThisCoroParameterAwaiter {
+  constexpr bool await_ready() {
+    return true;
+  }
+
+  void await_suspend(std::coroutine_handle<>) {
+  }
+
+  auto await_resume() noexcept {
+    return ThisCoroParameters{.executor = executor};
+  }
+
+  runtime::executors::IExecutor* executor;
+};
 
 template <class T>
 class TaskPromise {
@@ -39,15 +61,23 @@ class TaskPromise {
   }
 
   void return_value(auto arg) {
-    result_ = tl::expected<T, std::exception_ptr>{std::move(arg)};
+    result_.SetValue(std::move(arg));
   }
 
   void unhandled_exception() noexcept {
-    result_ = tl::unexpected<std::exception_ptr>(std::current_exception());
+    result_.SetException(std::current_exception());
   }
 
   FinalAwaiter final_suspend() noexcept {
     return {};
+  }
+
+  auto await_transform(const ThisCoroType&) {
+    return ThisCoroParameterAwaiter{.executor = executor_};
+  }
+
+  decltype(auto) await_transform(auto&& awaiter) {
+    return std::forward<decltype(awaiter)>(awaiter);
   }
 
  private:
@@ -64,24 +94,15 @@ class TaskPromise {
   }
 
   T UnwrapResult() {
-    if (!result_.has_value()) {
-      std::terminate();  // impossible
-    }
-
-    tl::expected<T, std::exception_ptr>& expected = result_.value();
-
-    if (expected.has_value()) {
-      return std::move(expected.value());
-    }
-
-    std::rethrow_exception(expected.error());
+    return result_.Unwrap();
   }
 
  private:
   friend class Task<T>;
 
-  std::optional<tl::expected<T, std::exception_ptr>> result_;
+  result::Result<T> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
+  runtime::executors::IExecutor* executor_{nullptr};
 };
 
 }  // namespace harmony::coro

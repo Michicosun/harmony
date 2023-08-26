@@ -22,12 +22,10 @@ std::suspend_always DetachTask::DetachPromise::initial_suspend() noexcept {
   return {};
 }
 
-void DetachTask::DetachPromise::return_void() {
-  // no-op
+void DetachTask::DetachPromise::return_void() noexcept {
 }
 
 void DetachTask::DetachPromise::unhandled_exception() noexcept {
-  // can't handle exception, because of task is detached
 }
 
 DetachTask::DetachPromise::FinalAwaiter

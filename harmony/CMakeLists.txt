@@ -19,10 +19,7 @@ target_include_directories(${LIB_TARGET} PUBLIC ${LIB_INCLUDE_PATH})
 
 # Dependencies
 
-set(LIB_DEPENDENCIES
-        pthread
-        expected
-        fmt)
+set(LIB_DEPENDENCIES pthread)
 
 target_link_libraries(${LIB_TARGET} PUBLIC ${LIB_DEPENDENCIES})
 

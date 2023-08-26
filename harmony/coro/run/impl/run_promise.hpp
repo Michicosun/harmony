@@ -1,10 +1,9 @@
 #pragma once
 
 #include <coroutine>
-#include <optional>
 
-#include <tl/expected.hpp>
-
+#include <exception>
+#include <harmony/result/result.hpp>
 #include <harmony/support/event/event.hpp>
 
 namespace harmony::coro {
@@ -41,11 +40,11 @@ class RunTaskPromise {
   }
 
   void return_value(auto arg) {
-    result_ = tl::expected<T, std::exception_ptr>{std::move(arg)};
+    result_.SetValue(std::move(arg));
   }
 
   void unhandled_exception() noexcept {
-    result_ = tl::unexpected<std::exception_ptr>(std::current_exception());
+    result_.SetException(std::current_exception());
   }
 
   auto final_suspend() noexcept {
@@ -59,22 +58,12 @@ class RunTaskPromise {
   }
 
   T UnwrapResult() {
-    if (!result_.has_value()) {
-      std::terminate();  // impossible
-    }
-
-    tl::expected<T, std::exception_ptr>& expected = result_.value();
-
-    if (expected.has_value()) {
-      return std::move(expected.value());
-    }
-
-    std::rethrow_exception(expected.error());
+    return result_.Unwrap();
   }
 
  private:
   support::MPSCEvent* event_{nullptr};
-  std::optional<tl::expected<T, std::exception_ptr>> result_;
+  result::Result<T> result_;
 };
 
 }  // namespace harmony::coro

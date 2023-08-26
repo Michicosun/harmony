@@ -1,7 +1,7 @@
 #pragma once
 
-#include <exception>
 #include <coroutine>
+#include <exception>
 #include <utility>
 
 #include <harmony/coro/core/task_promise.hpp>
@@ -15,7 +15,7 @@ class Task {
         : coro_(h) {
     }
 
-    bool await_ready() noexcept {
+    bool await_ready() const noexcept {
       return !coro_ || coro_.done();
     }
 
@@ -24,7 +24,7 @@ class Task {
       return coro_;
     }
 
-    T await_resume() noexcept {
+    T await_resume() {
       return coro_.promise().UnwrapResult();
     }
 

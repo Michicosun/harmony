@@ -20,7 +20,7 @@ class DetachTask {
 
     DetachTask get_return_object() noexcept;
     std::suspend_always initial_suspend() noexcept;
-    void return_void();
+    void return_void() noexcept;
     void unhandled_exception() noexcept;
     FinalAwaiter final_suspend() noexcept;
   };
