@@ -2,8 +2,8 @@
 
 #include <utility>
 
+#include <harmony/runtime/executors/concept.hpp>
 #include <harmony/runtime/executors/hint.hpp>
-#include <harmony/runtime/executors/interface.hpp>
 #include <harmony/runtime/executors/task.hpp>
 
 namespace harmony::runtime {
@@ -14,7 +14,7 @@ struct IScheduler {
       executors::ExecutorHint hint = executors::ExecutorHint::Unspecified) = 0;
 };
 
-template <class Executor>
+template <executors::Executor Executor>
 class Scheduler : public IScheduler {
  public:
   template <class... Args>

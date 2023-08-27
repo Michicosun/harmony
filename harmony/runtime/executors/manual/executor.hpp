@@ -3,20 +3,16 @@
 #include <cstddef>
 
 #include <harmony/runtime/executors/hint.hpp>
-#include <harmony/runtime/executors/interface.hpp>
 #include <harmony/runtime/executors/task.hpp>
 #include <harmony/support/intrusive/forward_list.hpp>
 
 namespace harmony::executors {
 
-class ManualExecutor : public IExecutor {
+class ManualExecutor {
  public:
   ManualExecutor();
 
-  void Submit(TaskBase* task,
-              ExecutorHint = ExecutorHint::Unspecified) override;
-
-  ~ManualExecutor() override = default;
+  void Submit(TaskBase* task, ExecutorHint = ExecutorHint::Unspecified);
 
   bool RunNext();
   size_t Run(size_t limit);
