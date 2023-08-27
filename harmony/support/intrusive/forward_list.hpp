@@ -5,26 +5,24 @@
 namespace harmony::support {
 
 template <class T>
-class ForwardListNode {
- public:
+struct ForwardListNode {
   ForwardListNode* Next() const noexcept {
-    return next_;
+    return next;
   }
 
   void SetNext(ForwardListNode* node) noexcept {
-    next_ = node;
+    next = node;
   }
 
   void Reset() noexcept {
-    next_ = nullptr;
+    next = nullptr;
   }
 
   T* Unwrap() {
     return static_cast<T*>(this);
   }
 
- private:
-  ForwardListNode* next_{nullptr};
+  ForwardListNode* next{nullptr};
 };
 
 // head -> * -> * -> ... -> * -> tail -> nullptr

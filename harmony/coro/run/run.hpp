@@ -16,4 +16,9 @@ inline auto Run(Awaitable&& object) {
   return task.UnwrapResult();
 }
 
+template <class AwaitableConstructor>
+inline auto Run(AwaitableConstructor&& constructor) {
+  return Run(constructor());
+}
+
 }  // namespace harmony::coro

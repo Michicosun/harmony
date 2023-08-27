@@ -10,4 +10,9 @@ inline void Detach(Awaitable&& object) {
   task.Start();
 }
 
+template <class AwaitableConstructor>
+inline auto Detach(AwaitableConstructor&& constructor) {
+  return Detach(constructor());
+}
+
 }  // namespace harmony::coro

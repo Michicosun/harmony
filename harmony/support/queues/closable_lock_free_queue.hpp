@@ -13,13 +13,13 @@ class ClosableLockFreeQueue {
 
  public:
   bool Push(Node* node) {
-    node->next_ = head_.load();
+    node->next = head_.load();
 
     do {
       if (node->Next() == ClosedHead()) {
         return false;  // closed
       }
-    } while (!head_.compare_exchange_weak(node->next_, node));
+    } while (!head_.compare_exchange_weak(node->next, node));
 
     return true;
   }
@@ -33,6 +33,10 @@ class ClosableLockFreeQueue {
   }
 
  private:
+  const Node* ClosedHead() const {
+    return reinterpret_cast<const Node*>(this);
+  }
+
   Node* ClosedHead() {
     return reinterpret_cast<Node*>(this);
   }

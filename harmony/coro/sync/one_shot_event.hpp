@@ -14,7 +14,7 @@ class OneShotEvent {
         : event{event} {
     }
 
-    bool await_ready() noexcept {
+    bool await_ready() const noexcept {
       return event->awaiters_.IsClosed();
     }
 
