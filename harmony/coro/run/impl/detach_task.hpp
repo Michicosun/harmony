@@ -3,7 +3,7 @@
 #include <harmony/coro/concepts/awaitable.hpp>
 #include <harmony/coro/traits/awaitable.hpp>
 
-namespace harmony::coro {
+namespace harmony::coro::impl {
 
 class DetachTask {
   class DetachPromise {
@@ -44,4 +44,4 @@ static DetachTask CreateDetachTask(Awaitable object) {
   co_return;
 }
 
-}  // namespace harmony::coro
+}  // namespace harmony::coro::impl

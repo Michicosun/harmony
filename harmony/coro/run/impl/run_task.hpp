@@ -1,10 +1,10 @@
 #pragma once
 
 #include <harmony/coro/concepts/awaitable.hpp>
-#include <harmony/coro/run/impl/run_promise.hpp>
+#include <harmony/coro/run/impl/run_task_promise.hpp>
 #include <harmony/coro/traits/awaitable.hpp>
 
-namespace harmony::coro {
+namespace harmony::coro::impl {
 
 template <class T>
 class RunTask {
@@ -47,4 +47,4 @@ static RunTask<ReturnType> CreateRunTask(Awaitable object) {
   co_return co_await saved_object;
 }
 
-}  // namespace harmony::coro
+}  // namespace harmony::coro::impl

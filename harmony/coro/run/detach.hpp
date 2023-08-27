@@ -6,7 +6,7 @@ namespace harmony::coro {
 
 template <concepts::Awaitable Awaitable>
 inline void Detach(Awaitable object) {
-  auto task = CreateDetachTask(std::forward<Awaitable>(object));
+  auto task = impl::CreateDetachTask(std::forward<Awaitable>(object));
   task.Start();
 }
 

@@ -5,7 +5,7 @@
 #include <harmony/runtime/executors/interface.hpp>
 #include <harmony/runtime/executors/task.hpp>
 
-namespace harmony::coro {
+namespace harmony::coro::impl {
 
 class ScheduleAwaiter : public runtime::executors::TaskBase {
  public:
@@ -23,4 +23,4 @@ class ScheduleAwaiter : public runtime::executors::TaskBase {
   std::coroutine_handle<> coroutine_{nullptr};
 };
 
-}  // namespace harmony::coro
+}  // namespace harmony::coro::impl

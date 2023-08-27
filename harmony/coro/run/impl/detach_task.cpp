@@ -1,6 +1,6 @@
 #include <harmony/coro/run/impl/detach_task.hpp>
 
-namespace harmony::coro {
+namespace harmony::coro::impl {
 
 bool DetachTask::DetachPromise::FinalAwaiter::await_ready() noexcept {
   return false;
@@ -41,4 +41,4 @@ DetachTask::DetachTask(std::coroutine_handle<promise_type> h) noexcept
     : coro_(h) {
 }
 
-}  // namespace harmony::coro
+}  // namespace harmony::coro::impl

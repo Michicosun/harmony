@@ -6,7 +6,7 @@
 namespace harmony::coro {
 
 inline auto Schedule(runtime::executors::IExecutor& executor) {
-  return ScheduleAwaiter(&executor);
+  return impl::ScheduleAwaiter(&executor);
 }
 
 }  // namespace harmony::coro

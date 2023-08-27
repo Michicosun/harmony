@@ -6,7 +6,7 @@
 #include <harmony/result/result.hpp>
 #include <harmony/support/event/event.hpp>
 
-namespace harmony::coro {
+namespace harmony::coro::impl {
 
 template <class T>
 class RunTask;
@@ -66,4 +66,4 @@ class RunTaskPromise {
   result::Result<T> result_;
 };
 
-}  // namespace harmony::coro
+}  // namespace harmony::coro::impl

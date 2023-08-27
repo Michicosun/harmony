@@ -13,7 +13,7 @@ inline auto Yield() {
     throw std::runtime_error("can't yield without executor");
   }
 
-  return ScheduleAwaiter(runtime::executors::CurrentExecutor());
+  return impl::ScheduleAwaiter(runtime::executors::CurrentExecutor());
 }
 
 }  // namespace harmony::coro

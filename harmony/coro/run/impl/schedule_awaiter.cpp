@@ -3,7 +3,7 @@
 #include <harmony/coro/run/impl/schedule_awaiter.hpp>
 #include <harmony/runtime/executors/interface.hpp>
 
-namespace harmony::coro {
+namespace harmony::coro::impl {
 
 ScheduleAwaiter::ScheduleAwaiter(runtime::executors::IExecutor* executor)
     : executor_{executor} {
@@ -27,4 +27,4 @@ void ScheduleAwaiter::Run() noexcept {
   coroutine_.resume();
 }
 
-}  // namespace harmony::coro
+}  // namespace harmony::coro::impl

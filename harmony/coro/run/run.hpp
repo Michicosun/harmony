@@ -8,7 +8,7 @@ template <concepts::Awaitable Awaitable>
 inline auto Run(Awaitable&& object) {
   support::MPSCEvent event;
 
-  auto task = CreateRunTask(std::forward<Awaitable>(object));
+  auto task = impl::CreateRunTask(std::forward<Awaitable>(object));
   task.Start(event);
 
   event.Wait();
