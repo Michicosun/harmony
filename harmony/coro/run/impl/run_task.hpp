@@ -42,7 +42,7 @@ class RunTask {
 
 template <concepts::Awaitable Awaitable,
           class ReturnType = traits::AwaitableTraits<Awaitable>::AwaiterReturnT>
-static RunTask<ReturnType> CreateRunTask(Awaitable object) {
+static RunTask<ReturnType> CreateRunTask(Awaitable&& object) {
   auto saved_object = std::move(object);
   co_return co_await saved_object;
 }

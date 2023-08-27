@@ -38,7 +38,7 @@ class DetachTask {
 };
 
 template <concepts::Awaitable Awaitable>
-static DetachTask CreateDetachTask(Awaitable object) {
+static DetachTask CreateDetachTask(Awaitable&& object) {
   auto saved_object = std::move(object);
   co_await saved_object;
   co_return;

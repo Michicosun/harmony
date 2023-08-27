@@ -17,21 +17,6 @@ constexpr ThisCoroType kThisCoro;
 
 struct ThisCoroParameters {};
 
-struct ThisCoroParameterAwaiter {
-  constexpr bool await_ready() {
-    return true;
-  }
-
-  void await_suspend(std::coroutine_handle<>) {
-  }
-
-  auto await_resume() noexcept {
-    return ThisCoroParameters{};
-  }
-
-  runtime::executors::IExecutor* executor;
-};
-
 template <class T>
 class TaskPromise {
   using handle = std::coroutine_handle<TaskPromise>;
@@ -47,6 +32,21 @@ class TaskPromise {
 
     void await_resume() noexcept {
     }
+  };
+
+  struct ThisCoroParameterAwaiter {
+    constexpr bool await_ready() {
+      return true;
+    }
+
+    void await_suspend(std::coroutine_handle<>) {
+    }
+
+    auto await_resume() noexcept {
+      return ThisCoroParameters{};
+    }
+
+    runtime::executors::IExecutor* executor;
   };
 
  public:
