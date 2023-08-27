@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <coroutine>
 #include <exception>
 #include <utility>
@@ -15,8 +16,12 @@ class Task;
 class ThisCoroType {};
 constexpr ThisCoroType kThisCoro;
 
-struct ThisCoroParameters {
+struct CoroParameters {
   runtime::IScheduler* scheduler_{nullptr};
+
+  void CheckActiveScheduler() const {
+    assert(scheduler_);
+  }
 };
 
 template <class T>
@@ -36,7 +41,7 @@ class TaskPromise {
     }
   };
 
-  struct ThisCoroParametersAwaiter {
+  struct CoroParametersAwaiter {
     constexpr bool await_ready() {
       return true;
     }
@@ -45,7 +50,7 @@ class TaskPromise {
     }
 
     auto await_resume() noexcept {
-      return promise->MakeCoroParameters();
+      return promise->GetParameters();
     }
 
     TaskPromise* promise;
@@ -73,7 +78,7 @@ class TaskPromise {
   }
 
   auto await_transform(const ThisCoroType&) {
-    return ThisCoroParametersAwaiter{this};
+    return CoroParametersAwaiter{this};
   }
 
   decltype(auto) await_transform(auto&& awaiter) {
@@ -81,14 +86,8 @@ class TaskPromise {
   }
 
  public:
-  ThisCoroParameters MakeCoroParameters() {
-    return ThisCoroParameters{
-        .scheduler_ = scheduler_,
-    };
-  }
-
-  void SetScheduler(runtime::IScheduler* scheduler) {
-    scheduler_ = scheduler;
+  CoroParameters& GetParameters() {
+    return parameters_;
   }
 
  private:
@@ -110,10 +109,11 @@ class TaskPromise {
 
  private:
   friend class Task<T>;
+  friend struct CoroParametersAwaiter;
 
   result::Result<T> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
-  runtime::IScheduler* scheduler_{nullptr};
+  CoroParameters parameters_;
 };
 
 }  // namespace harmony::coro
