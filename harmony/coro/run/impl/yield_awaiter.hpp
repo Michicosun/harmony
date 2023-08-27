@@ -29,7 +29,7 @@ class YieldAwaiter : public executors::TaskBase {
   void Run() noexcept override;
 
  private:
-  std::coroutine_handle<> coroutine_;
+  std::coroutine_handle<> coroutine_{nullptr};
 };
 
 }  // namespace harmony::coro::impl
