@@ -53,6 +53,10 @@ class Task {
     return TaskAwaiter{coro_};
   }
 
+  promise_type& GetPromise() {
+    return coro_.promise();
+  }
+
  private:
   friend class TaskPromise<T>;
 

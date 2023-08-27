@@ -22,6 +22,10 @@ struct CoroParameters {
   void CheckActiveScheduler() const {
     assert(scheduler_);
   }
+
+  void MergeFrom(const CoroParameters& other) {
+    scheduler_ = other.scheduler_;
+  }
 };
 
 template <class T>
@@ -75,6 +79,26 @@ class TaskPromise {
 
   FinalAwaiter final_suspend() noexcept {
     return {};
+  }
+
+  template <typename U>
+  Task<U>& await_transform(Task<U>& other_task) {
+    TaskPromise<U>& other_promise = other_task.GetPromise();
+
+    // push parameters to child task
+    other_promise.GetParameters().MergeFrom(parameters_);
+
+    return other_task;
+  }
+
+  template <typename U>
+  Task<U> await_transform(Task<U>&& other_task) {
+    TaskPromise<U>& other_promise = other_task.GetPromise();
+
+    // push parameters to child task
+    other_promise.GetParameters().MergeFrom(parameters_);
+
+    return std::move(other_task);
   }
 
   auto await_transform(const ThisCoroType&) {
