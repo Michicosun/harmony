@@ -1,6 +1,5 @@
 #include <cstddef>
 
-#include <harmony/runtime/executors/current.hpp>
 #include <harmony/runtime/executors/manual/executor.hpp>
 
 namespace harmony::executors {

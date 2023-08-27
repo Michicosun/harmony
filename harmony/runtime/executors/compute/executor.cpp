@@ -1,7 +1,6 @@
 #include <cassert>
 
 #include <harmony/runtime/executors/compute/executor.hpp>
-#include <harmony/runtime/executors/current.hpp>
 
 namespace harmony::executors {
 
