@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <harmony/executors/manual/executor.hpp>
-#include <harmony/executors/task.hpp>
+#include <harmony/runtime/executors/manual/executor.hpp>
+#include <harmony/runtime/executors/task.hpp>
 
 struct TestTask : public harmony::executors::TaskBase {
   size_t& var;

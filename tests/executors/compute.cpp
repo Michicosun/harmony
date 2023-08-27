@@ -4,8 +4,8 @@
 
 #include <gtest/gtest.h>
 
-#include <harmony/executors/compute/executor.hpp>
-#include <harmony/executors/task.hpp>
+#include <harmony/runtime/executors/compute/executor.hpp>
+#include <harmony/runtime/executors/task.hpp>
 
 using namespace std::chrono_literals;
 
