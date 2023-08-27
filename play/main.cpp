@@ -63,5 +63,10 @@ int main() {
 
   executor.RunNext();
 
+  std::cout << "befor running yield task: " << executor.TasksInQueue()
+            << std::endl;
+
+  executor.RunNext();
+
   return 0;
 }

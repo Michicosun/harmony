@@ -11,6 +11,8 @@ namespace harmony::runtime::executors {
 
 class ManualExecutor : public IExecutor {
  public:
+  ManualExecutor();
+
   void Submit(TaskBase* task, ExecutorHint) override;
 
   ~ManualExecutor() override = default;

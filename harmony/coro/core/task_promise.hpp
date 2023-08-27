@@ -15,9 +15,7 @@ class Task;
 class ThisCoroType {};
 constexpr ThisCoroType kThisCoro;
 
-struct ThisCoroParameters {
-  runtime::executors::IExecutor* executor;
-};
+struct ThisCoroParameters {};
 
 struct ThisCoroParameterAwaiter {
   constexpr bool await_ready() {
@@ -28,7 +26,7 @@ struct ThisCoroParameterAwaiter {
   }
 
   auto await_resume() noexcept {
-    return ThisCoroParameters{.executor = executor};
+    return ThisCoroParameters{};
   }
 
   runtime::executors::IExecutor* executor;
@@ -73,7 +71,7 @@ class TaskPromise {
   }
 
   auto await_transform(const ThisCoroType&) {
-    return ThisCoroParameterAwaiter{.executor = executor_};
+    return ThisCoroParameterAwaiter{};
   }
 
   decltype(auto) await_transform(auto&& awaiter) {
@@ -102,7 +100,6 @@ class TaskPromise {
 
   result::Result<T> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
-  runtime::executors::IExecutor* executor_{nullptr};
 };
 
 }  // namespace harmony::coro
