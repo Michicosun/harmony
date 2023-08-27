@@ -13,3 +13,4 @@ Log("Configuring tests")
 
 MakeTest(threads)
 MakeTest(support)
+MakeTest(executors)
