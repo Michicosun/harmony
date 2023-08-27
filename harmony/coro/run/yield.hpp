@@ -4,7 +4,6 @@
 
 #include <harmony/coro/concepts/awaitable.hpp>
 #include <harmony/coro/run/impl/schedule_awaiter.hpp>
-#include <harmony/executors/current.hpp>
 
 namespace harmony::coro {
 

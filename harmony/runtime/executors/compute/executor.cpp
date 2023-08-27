@@ -1,7 +1,7 @@
 #include <cassert>
 
-#include <harmony/executors/compute/executor.hpp>
-#include <harmony/executors/current.hpp>
+#include <harmony/runtime/executors/compute/executor.hpp>
+#include <harmony/runtime/executors/current.hpp>
 
 namespace harmony::executors {
 
@@ -28,7 +28,6 @@ void ComputeExecutor::Submit(TaskBase* task, ExecutorHint) {
 void ComputeExecutor::Start() {
   for (size_t i = 0; i < threads_count_; ++i) {
     workers_.emplace_back([this]() {
-      SetExecutorToTLS(this);  // save pointer to pool
       WorkerRoutine();
     });
   }

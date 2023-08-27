@@ -2,24 +2,31 @@
 
 #include <coroutine>
 
-#include <harmony/executors/interface.hpp>
-#include <harmony/executors/task.hpp>
+#include <harmony/coro/core/task_promise.hpp>
+#include <harmony/runtime/scheduler.hpp>
 
 namespace harmony::coro::impl {
 
 class ScheduleAwaiter : public executors::TaskBase {
  public:
-  explicit ScheduleAwaiter(executors::IExecutor* executor);
+  explicit ScheduleAwaiter(runtime::IScheduler* scheduler);
 
   bool await_ready() noexcept;
-  void await_suspend(std::coroutine_handle<> coroutine) noexcept;
+
+  template <class T>
+  void await_suspend(std::coroutine_handle<TaskPromise<T>> coroutine) noexcept {
+    coroutine_ = coroutine;
+    coroutine.promise().SetScheduler(scheduler_);
+    scheduler_->Schedule(this);
+  }
+
   void await_resume() noexcept;
 
  public:
   void Run() noexcept override;
 
  private:
-  executors::IExecutor* executor_{nullptr};
+  runtime::IScheduler* scheduler_{nullptr};
   std::coroutine_handle<> coroutine_{nullptr};
 };
 

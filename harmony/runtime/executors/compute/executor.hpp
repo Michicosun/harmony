@@ -3,9 +3,9 @@
 #include <thread>
 #include <vector>
 
-#include <harmony/executors/hint.hpp>
-#include <harmony/executors/interface.hpp>
-#include <harmony/executors/task.hpp>
+#include <harmony/runtime/executors/hint.hpp>
+#include <harmony/runtime/executors/interface.hpp>
+#include <harmony/runtime/executors/task.hpp>
 #include <harmony/support/queues/blocking_queue.hpp>
 #include <harmony/support/wait_group/wait_group.hpp>
 

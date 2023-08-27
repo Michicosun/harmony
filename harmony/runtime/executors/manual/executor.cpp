@@ -1,12 +1,11 @@
 #include <cstddef>
 
-#include <harmony/executors/current.hpp>
-#include <harmony/executors/manual/executor.hpp>
+#include <harmony/runtime/executors/current.hpp>
+#include <harmony/runtime/executors/manual/executor.hpp>
 
 namespace harmony::executors {
 
 ManualExecutor::ManualExecutor() {
-  SetExecutorToTLS(this);  // creator of manual can run tasks
 }
 
 void ManualExecutor::Submit(TaskBase* task, ExecutorHint) {

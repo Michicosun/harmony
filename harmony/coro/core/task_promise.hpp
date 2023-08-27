@@ -4,8 +4,8 @@
 #include <exception>
 #include <utility>
 
-#include <harmony/executors/interface.hpp>
 #include <harmony/result/result.hpp>
+#include <harmony/runtime/scheduler.hpp>
 
 namespace harmony::coro {
 
@@ -15,7 +15,9 @@ class Task;
 class ThisCoroType {};
 constexpr ThisCoroType kThisCoro;
 
-struct ThisCoroParameters {};
+struct ThisCoroParameters {
+  runtime::IScheduler* scheduler_{nullptr};
+};
 
 template <class T>
 class TaskPromise {
@@ -34,19 +36,19 @@ class TaskPromise {
     }
   };
 
-  struct ThisCoroParameterAwaiter {
+  struct ThisCoroParametersAwaiter {
     constexpr bool await_ready() {
       return true;
     }
 
-    void await_suspend(std::coroutine_handle<>) {
+    void await_suspend(handle) {
     }
 
     auto await_resume() noexcept {
-      return ThisCoroParameters{};
+      return promise->MakeCoroParameters();
     }
 
-    executors::IExecutor* executor;
+    TaskPromise* promise;
   };
 
  public:
@@ -71,11 +73,22 @@ class TaskPromise {
   }
 
   auto await_transform(const ThisCoroType&) {
-    return ThisCoroParameterAwaiter{};
+    return ThisCoroParametersAwaiter{this};
   }
 
   decltype(auto) await_transform(auto&& awaiter) {
     return std::forward<decltype(awaiter)>(awaiter);
+  }
+
+ public:
+  ThisCoroParameters MakeCoroParameters() {
+    return ThisCoroParameters{
+        .scheduler_ = scheduler_,
+    };
+  }
+
+  void SetScheduler(runtime::IScheduler* scheduler) {
+    scheduler_ = scheduler;
   }
 
  private:
@@ -100,6 +113,7 @@ class TaskPromise {
 
   result::Result<T> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
+  runtime::IScheduler* scheduler_{nullptr};
 };
 
 }  // namespace harmony::coro
