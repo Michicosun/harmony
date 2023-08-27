@@ -1,6 +1,6 @@
 #pragma once
 
-namespace harmony::runtime::executors {
+namespace harmony::executors {
 
 enum class ExecutorHint {
   Unspecified,  // random
@@ -8,4 +8,4 @@ enum class ExecutorHint {
   Yield = 3,    // use global queue
 };
 
-}  // namespace harmony::runtime::executors
+}  // namespace harmony::executors

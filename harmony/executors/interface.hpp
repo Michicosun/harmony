@@ -1,9 +1,9 @@
 #pragma once
 
-#include <harmony/runtime/executors/hint.hpp>
-#include <harmony/runtime/executors/task.hpp>
+#include <harmony/executors/hint.hpp>
+#include <harmony/executors/task.hpp>
 
-namespace harmony::runtime::executors {
+namespace harmony::executors {
 
 struct IExecutor {
   virtual ~IExecutor() = default;
@@ -11,4 +11,4 @@ struct IExecutor {
                       ExecutorHint = ExecutorHint::Unspecified) = 0;
 };
 
-}  // namespace harmony::runtime::executors
+}  // namespace harmony::executors

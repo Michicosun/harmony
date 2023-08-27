@@ -2,12 +2,12 @@
 
 #include <cstddef>
 
-#include <harmony/runtime/executors/hint.hpp>
-#include <harmony/runtime/executors/interface.hpp>
-#include <harmony/runtime/executors/task.hpp>
+#include <harmony/executors/hint.hpp>
+#include <harmony/executors/interface.hpp>
+#include <harmony/executors/task.hpp>
 #include <harmony/support/intrusive/forward_list.hpp>
 
-namespace harmony::runtime::executors {
+namespace harmony::executors {
 
 class ManualExecutor : public IExecutor {
  public:
@@ -31,4 +31,4 @@ class ManualExecutor : public IExecutor {
   support::ForwardList<TaskBase> tasks_;
 };
 
-}  // namespace harmony::runtime::executors
+}  // namespace harmony::executors

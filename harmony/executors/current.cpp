@@ -1,6 +1,6 @@
-#include <harmony/runtime/executors/current.hpp>
+#include <harmony/executors/current.hpp>
 
-namespace harmony::runtime::executors {
+namespace harmony::executors {
 
 thread_local IExecutor* current_executor = nullptr;
 
@@ -12,4 +12,4 @@ IExecutor* CurrentExecutor() {
   return current_executor;
 }
 
-}  // namespace harmony::runtime::executors
+}  // namespace harmony::executors

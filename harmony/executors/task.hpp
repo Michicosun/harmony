@@ -2,7 +2,7 @@
 
 #include <harmony/support/intrusive/forward_list.hpp>
 
-namespace harmony::runtime::executors {
+namespace harmony::executors {
 
 struct ITask {
   virtual ~ITask() = default;
@@ -14,4 +14,4 @@ struct TaskBase : ITask,
   //
 };
 
-}  // namespace harmony::runtime::executors
+}  // namespace harmony::executors

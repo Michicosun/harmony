@@ -1,9 +1,9 @@
 #include <cstddef>
 
-#include <harmony/runtime/executors/current.hpp>
-#include <harmony/runtime/executors/manual/executor.hpp>
+#include <harmony/executors/current.hpp>
+#include <harmony/executors/manual/executor.hpp>
 
-namespace harmony::runtime::executors {
+namespace harmony::executors {
 
 ManualExecutor::ManualExecutor() {
   SetExecutorToTLS(this);  // creator of manual can run tasks
@@ -52,4 +52,4 @@ bool ManualExecutor::IsEmpty() const {
   return tasks_.IsEmpty();
 }
 
-}  // namespace harmony::runtime::executors
+}  // namespace harmony::executors

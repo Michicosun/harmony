@@ -2,14 +2,14 @@
 
 #include <coroutine>
 
-#include <harmony/runtime/executors/interface.hpp>
-#include <harmony/runtime/executors/task.hpp>
+#include <harmony/executors/interface.hpp>
+#include <harmony/executors/task.hpp>
 
 namespace harmony::coro::impl {
 
-class ScheduleAwaiter : public runtime::executors::TaskBase {
+class ScheduleAwaiter : public executors::TaskBase {
  public:
-  explicit ScheduleAwaiter(runtime::executors::IExecutor* executor);
+  explicit ScheduleAwaiter(executors::IExecutor* executor);
 
   bool await_ready() noexcept;
   void await_suspend(std::coroutine_handle<> coroutine) noexcept;
@@ -19,7 +19,7 @@ class ScheduleAwaiter : public runtime::executors::TaskBase {
   void Run() noexcept override;
 
  private:
-  runtime::executors::IExecutor* executor_{nullptr};
+  executors::IExecutor* executor_{nullptr};
   std::coroutine_handle<> coroutine_{nullptr};
 };
 

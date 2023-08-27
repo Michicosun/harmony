@@ -1,8 +1,8 @@
 #pragma once
 
-#include <harmony/runtime/executors/interface.hpp>
+#include <harmony/executors/interface.hpp>
 
-namespace harmony::runtime::executors {
+namespace harmony::executors {
 
 // emplaces pointer to executor to tls
 void SetExecutorToTLS(IExecutor* executor);
@@ -11,4 +11,4 @@ void SetExecutorToTLS(IExecutor* executor);
 // nullptr if running outside executor
 IExecutor* CurrentExecutor();
 
-}  // namespace harmony::runtime::executors
+}  // namespace harmony::executors

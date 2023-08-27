@@ -1,11 +1,11 @@
 #include <cassert>
 
 #include <harmony/coro/run/impl/schedule_awaiter.hpp>
-#include <harmony/runtime/executors/interface.hpp>
+#include <harmony/executors/interface.hpp>
 
 namespace harmony::coro::impl {
 
-ScheduleAwaiter::ScheduleAwaiter(runtime::executors::IExecutor* executor)
+ScheduleAwaiter::ScheduleAwaiter(executors::IExecutor* executor)
     : executor_{executor} {
   assert(executor_);
 }

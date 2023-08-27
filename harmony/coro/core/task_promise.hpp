@@ -4,8 +4,8 @@
 #include <exception>
 #include <utility>
 
+#include <harmony/executors/interface.hpp>
 #include <harmony/result/result.hpp>
-#include <harmony/runtime/executors/interface.hpp>
 
 namespace harmony::coro {
 
@@ -46,7 +46,7 @@ class TaskPromise {
       return ThisCoroParameters{};
     }
 
-    runtime::executors::IExecutor* executor;
+    executors::IExecutor* executor;
   };
 
  public:
