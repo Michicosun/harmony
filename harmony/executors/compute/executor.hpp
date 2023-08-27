@@ -16,7 +16,8 @@ class ComputeExecutor : public IExecutor {
   explicit ComputeExecutor(size_t threads);
   ~ComputeExecutor();
 
-  void Submit(TaskBase* task, ExecutorHint) override;
+  void Submit(TaskBase* task,
+              ExecutorHint = ExecutorHint::Unspecified) override;
 
   void Start();
   void Stop();

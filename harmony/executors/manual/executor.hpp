@@ -13,7 +13,8 @@ class ManualExecutor : public IExecutor {
  public:
   ManualExecutor();
 
-  void Submit(TaskBase* task, ExecutorHint) override;
+  void Submit(TaskBase* task,
+              ExecutorHint = ExecutorHint::Unspecified) override;
 
   ~ManualExecutor() override = default;
 
