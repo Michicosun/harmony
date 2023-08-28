@@ -1,7 +1,3 @@
-#include <atomic>
-#include <cassert>
-#include <cstddef>
-#include <thread>
 #include <variant>
 
 #include <harmony/coro/core/task.hpp>
@@ -11,6 +7,7 @@
 #include <harmony/coro/run/yield.hpp>
 #include <harmony/coro/sync/mutex.hpp>
 #include <harmony/coro/sync/one_shot_event.hpp>
+#include <harmony/coro/sync/wait_group.hpp>
 #include <harmony/runtime/executors/compute/executor.hpp>
 #include <harmony/runtime/scheduler.hpp>
 
@@ -24,10 +21,11 @@ int main() {
   auto main = [&](size_t coro_count) -> coro::Task<int> {
     co_await coro::Schedule(scheduler);
 
-    std::atomic<size_t> running = coro_count;
-    coro::OneShotEvent event;
     coro::Mutex mutex;
     size_t counter = 0;
+
+    coro::WaitGroup wg;
+    wg.Add(coro_count);
 
     auto contender = [&]() -> coro::Task<std::monostate> {
       co_await coro::Schedule(scheduler);
@@ -37,9 +35,7 @@ int main() {
         counter += 1;
       }
 
-      if (running.fetch_sub(1) == 1) {
-        event.Complete();
-      }
+      wg.Done();
 
       co_return std::monostate{};
     };
@@ -48,7 +44,7 @@ int main() {
       coro::Detach(contender());
     }
 
-    co_await event.Wait();
+    co_await wg.Wait();
 
     std::cout << "DONE: " << counter << std::endl;
 
