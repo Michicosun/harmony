@@ -8,6 +8,7 @@
 #include <harmony/runtime/executors/task.hpp>
 #include <harmony/runtime/scheduler.hpp>
 #include <harmony/support/intrusive/forward_list.hpp>
+#include "harmony/support/intrusive/node_unwrap.hpp"
 
 namespace harmony::coro {
 
@@ -118,7 +119,7 @@ class Mutex {
     assert(waiters_list_.IsEmpty());
 
     while (head != nullptr) {
-      waiters_list_.PushFront(std::exchange(head, head->next->Unwrap()));
+      waiters_list_.PushFront(std::exchange(head, support::Unwrap(head->next)));
     }
   }
 

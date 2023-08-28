@@ -43,7 +43,7 @@ int main() {
       coro::Detach(contender(scheduler, mutex));
     }
 
-    std::this_thread::sleep_for(5s);
+    std::this_thread::sleep_for(20s);
 
     co_return counter;
   };
