@@ -23,5 +23,6 @@ add_subdirectory(harmony)
 if(BUILD_TESTS)
     add_subdirectory(play)
     add_subdirectory(tests)
+    add_subdirectory(examples)
 endif()
 
