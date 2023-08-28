@@ -13,20 +13,41 @@
 namespace harmony::coro {
 
 class Mutex {
+ public:
+  enum class UnlockStrategy {
+    Schedule,
+    Resume,
+  };
+
+ private:
   struct UniqueLock {
    public:
-    explicit UniqueLock(Mutex* mutex)
-        : mutex{mutex} {
+    explicit UniqueLock(Mutex* mutex, UnlockStrategy strategy)
+        : mutex{mutex},
+          strategy(strategy) {
     }
 
     ~UniqueLock() {
-      mutex->Unlock();
+      mutex->Unlock(strategy);
     }
 
     Mutex* mutex{nullptr};
+    UnlockStrategy strategy;
   };
 
   struct ScheduleTask : public executors::TaskBase {
+    void Start(UnlockStrategy strategy) {
+      if (strategy == UnlockStrategy::Schedule) {
+        Schedule();
+      } else {
+        Run();
+      }
+    }
+
+    std::coroutine_handle<> suspended_coro{nullptr};
+    runtime::IScheduler* scheduler{nullptr};
+
+   private:
     void Schedule() {
       scheduler->Schedule(this);
     }
@@ -34,14 +55,12 @@ class Mutex {
     void Run() noexcept {
       suspended_coro.resume();
     }
-
-    std::coroutine_handle<> suspended_coro{nullptr};
-    runtime::IScheduler* scheduler{nullptr};
   };
 
   struct LockAwaiter : public support::ForwardListNode<LockAwaiter> {
-    explicit LockAwaiter(Mutex* mutex) noexcept
-        : mutex{mutex} {
+    explicit LockAwaiter(Mutex* mutex, UnlockStrategy strategy) noexcept
+        : mutex{mutex},
+          strategy(strategy) {
       assert(mutex);
     }
 
@@ -65,29 +84,32 @@ class Mutex {
     }
 
     UniqueLock await_resume() const noexcept {
-      return UniqueLock{mutex};
+      return UniqueLock{mutex, strategy};
     }
 
     Mutex* mutex{nullptr};
     ScheduleTask schedule_task;
+    UnlockStrategy strategy;
   };
 
  public:
-  inline auto ScopedLock() noexcept {
-    return LockAwaiter{this};
+  inline auto ScopedLock(
+      UnlockStrategy strategy = UnlockStrategy::Resume) noexcept {
+    return LockAwaiter{this, strategy};
   }
 
+ private:
   bool TryLock() noexcept {
     auto old_state = Unlocked;
     return state_.compare_exchange_strong(old_state, LockedNoWaiters);
   }
 
-  void Unlock() {
+  void Unlock(UnlockStrategy strategy) {
     assert(state_.load() != Unlocked);
 
     if (!waiters_list_.IsEmpty()) {
       LockAwaiter* head = waiters_list_.PopFront();
-      head->schedule_task.Run();
+      head->schedule_task.Start(strategy);
     } else {
       auto old_state = LockedNoWaiters;
       if (state_.compare_exchange_strong(old_state, Unlocked)) {
@@ -103,7 +125,7 @@ class Mutex {
       assert(!waiters_list_.IsEmpty());
 
       LockAwaiter* head = waiters_list_.PopFront();
-      head->schedule_task.Run();
+      head->schedule_task.Start(strategy);
     }
   }
 
