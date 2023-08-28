@@ -39,6 +39,10 @@ class Scheduler : public IScheduler {
     executor_.Start();
   }
 
+  void WaitIdle() {
+    executor_.WaitIdle();
+  }
+
   void Stop() {
     executor_.Stop();
   }

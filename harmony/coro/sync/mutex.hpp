@@ -46,7 +46,7 @@ class Mutex {
     }
 
     bool await_ready() const noexcept {
-      return false;  // TODO: change to try_lock
+      return mutex->TryLock();
     }
 
     template <class T>
@@ -77,12 +77,17 @@ class Mutex {
     return LockAwaiter{this};
   }
 
+  bool TryLock() noexcept {
+    auto old_state = Unlocked;
+    return state_.compare_exchange_strong(old_state, LockedNoWaiters);
+  }
+
   void Unlock() {
     assert(state_.load() != Unlocked);
 
     if (!waiters_list_.IsEmpty()) {
       LockAwaiter* head = waiters_list_.PopFront();
-      head->schedule_task.Schedule();
+      head->schedule_task.Run();
     } else {
       auto old_state = LockedNoWaiters;
       if (state_.compare_exchange_strong(old_state, Unlocked)) {
@@ -98,7 +103,7 @@ class Mutex {
       assert(!waiters_list_.IsEmpty());
 
       LockAwaiter* head = waiters_list_.PopFront();
-      head->schedule_task.Schedule();
+      head->schedule_task.Run();
     }
   }
 

@@ -18,15 +18,9 @@ class OneShotEvent {
       return event->awaiters_.IsClosed();
     }
 
-    std::coroutine_handle<> await_suspend(
-        std::coroutine_handle<> coroutine) noexcept {
+    bool await_suspend(std::coroutine_handle<> coroutine) noexcept {
       stopped_coroutine = coroutine;
-
-      if (event->awaiters_.Push(this)) {
-        return std::noop_coroutine();
-      }
-
-      return coroutine;
+      return event->awaiters_.Push(this);
     }
 
     void await_resume() noexcept {
