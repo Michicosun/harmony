@@ -1,3 +1,5 @@
+#include <atomic>
+#include <cassert>
 #include <cstddef>
 #include <thread>
 #include <variant>
@@ -15,41 +17,48 @@
 using namespace harmony;  // NOLINT
 using namespace std::chrono_literals;
 
-int64_t counter = 0;
-
-coro::Task<std::monostate> contender(auto& scheduler, auto& mutex) {
-  co_await coro::Schedule(scheduler);
-
-  for (size_t i = 0; i < 100000; ++i) {
-    auto lock = co_await mutex.ScopedLock();
-    counter += 1;
-  }
-
-  co_return std::monostate{};
-}
-
 int main() {
   runtime::Scheduler<executors::ComputeExecutor> scheduler(12);
   scheduler.Start();
 
-  auto main = [&](size_t workers_count) -> coro::Task<int> {
+  auto main = [&](size_t coro_count) -> coro::Task<int> {
     co_await coro::Schedule(scheduler);
 
+    std::atomic<size_t> running = coro_count;
+    coro::OneShotEvent event;
     coro::Mutex mutex;
+    size_t counter = 0;
 
-    std::cout << &counter << std::endl;
+    auto contender = [&]() -> coro::Task<std::monostate> {
+      co_await coro::Schedule(scheduler);
 
-    for (size_t i = 0; i < workers_count; ++i) {
-      coro::Detach(contender(scheduler, mutex));
+      for (size_t j = 0; j < 100000; ++j) {
+        auto lock = co_await mutex.ScopedLock();
+        counter += 1;
+      }
+
+      if (running.fetch_sub(1) == 1) {
+        event.Complete();
+      }
+
+      co_return std::monostate{};
+    };
+
+    for (size_t i = 0; i < coro_count; ++i) {
+      coro::Detach(contender());
     }
 
-    std::this_thread::sleep_for(20s);
+    co_await event.Wait();
+
+    std::cout << "DONE: " << counter << std::endl;
 
     co_return counter;
   };
 
-  std::cout << coro::Run(main(10)) << std::endl;
+  coro::Run(main(100));
 
+  scheduler.WaitIdle();
   scheduler.Stop();
+
   return 0;
 }
