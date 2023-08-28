@@ -1,5 +1,4 @@
-#include <exception>
-#include <iostream>
+#include <cstddef>
 #include <thread>
 #include <variant>
 
@@ -8,65 +7,49 @@
 #include <harmony/coro/run/run.hpp>
 #include <harmony/coro/run/schedule.hpp>
 #include <harmony/coro/run/yield.hpp>
-#include <harmony/runtime/executors/manual/executor.hpp>
+#include <harmony/coro/sync/mutex.hpp>
+#include <harmony/coro/sync/one_shot_event.hpp>
+#include <harmony/runtime/executors/compute/executor.hpp>
+#include <harmony/runtime/scheduler.hpp>
 
-harmony::coro::Task<std::string> boo(
-    int x, harmony::runtime::executors::ManualExecutor& executor) {
-  std::cout << "running on thread: " << std::this_thread::get_id() << std::endl;
+using namespace harmony;  // NOLINT
+using namespace std::chrono_literals;
 
-  if (x % 3 == 0) {
-    co_await harmony::coro::Schedule(executor);
-    std::cout << "scheduled inside" << std::endl;
-    co_await harmony::coro::Yield();
-  }
+int64_t counter = 0;
 
-  std::cout << "running on thread: " << std::this_thread::get_id() << std::endl;
+coro::Task<std::monostate> contender(auto& scheduler, auto& mutex) {
+  co_await coro::Schedule(scheduler);
 
-  co_return "bye";
-}
-
-harmony::coro::Task<int> foo(
-    int x, harmony::runtime::executors::ManualExecutor& executor) {
-  std::cout << "running boo..." << std::endl;
-
-  std::string s = co_await boo(x, executor);
-  std::cout << "boo return: " << s << std::endl;
-
-  co_return 10;
-}
-
-harmony::coro::Task<std::monostate> amain(
-    harmony::runtime::executors::ManualExecutor& executor) {
-  try {
-    int x;
-    std::cin >> x;
-
-    co_await foo(x, executor);
-  } catch (const std::exception& e) {
-    std::cout << "caught: " << e.what() << std::endl;
+  for (size_t i = 0; i < 100000; ++i) {
+    auto lock = co_await mutex.ScopedLock();
+    counter += 1;
   }
 
   co_return std::monostate{};
 }
 
-harmony::coro::Task<int> sync() {
-  co_return 10ll;
-}
-
 int main() {
-  harmony::runtime::executors::ManualExecutor executor;
+  runtime::Scheduler<executors::ComputeExecutor> scheduler(12);
+  scheduler.Start();
 
-  std::cout << "sync: " << harmony::coro::Run(sync()) << std::endl;
-  harmony::coro::Detach(amain(executor));
+  auto main = [&](size_t workers_count) -> coro::Task<int> {
+    co_await coro::Schedule(scheduler);
 
-  std::cout << "before scheduling: " << executor.TasksInQueue() << std::endl;
+    coro::Mutex mutex;
 
-  executor.RunNext();
+    std::cout << &counter << std::endl;
 
-  std::cout << "befor running yield task: " << executor.TasksInQueue()
-            << std::endl;
+    for (size_t i = 0; i < workers_count; ++i) {
+      coro::Detach(contender(scheduler, mutex));
+    }
 
-  executor.RunNext();
+    std::this_thread::sleep_for(5s);
 
+    co_return counter;
+  };
+
+  std::cout << coro::Run(main(10)) << std::endl;
+
+  scheduler.Stop();
   return 0;
 }

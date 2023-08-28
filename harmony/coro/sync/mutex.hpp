@@ -1,180 +1,148 @@
 #pragma once
 
 #include <atomic>
+#include <cassert>
 #include <coroutine>
 
+#include <harmony/coro/core/task_promise.hpp>
+#include <harmony/runtime/executors/task.hpp>
+#include <harmony/runtime/scheduler.hpp>
 #include <harmony/support/intrusive/forward_list.hpp>
-#include <utility>
-#include "harmony/coro/core/task_promise.hpp"
-#include "harmony/runtime/executors/task.hpp"
-#include "harmony/runtime/scheduler.hpp"
 
 namespace harmony::coro {
 
 class Mutex {
   struct UniqueLock {
-    explicit UniqueLock(Mutex& mutex)
-        : mutex_{mutex} {
+   public:
+    explicit UniqueLock(Mutex* mutex)
+        : mutex{mutex} {
     }
 
     ~UniqueLock() {
-      mutex_.Unlock();
+      mutex->Unlock();
     }
 
-   private:
-    Mutex& mutex_;
+    Mutex* mutex{nullptr};
   };
 
-  struct LockAwaiter : executors::TaskBase {
-    explicit LockAwaiter(Mutex& mutex)
-        : mutex_{mutex} {
-    }
-
-    bool await_ready() const noexcept {
-      return mutex_.TryLock();
-    }
-
-    template <class T>
-    std::coroutine_handle<> await_suspend(
-        std::coroutine_handle<TaskPromise<T>> coroutine) {
-      TaskPromise<T>& promise = coroutine.promise();
-
-      // save waiting coroutine scheduler
-      promise.GetParameters().CheckActiveScheduler();
-      scheduler_ = promise.GetParameters().scheduler_;
-
-      // save coroutine
-      waiting_coro_ = coroutine;
-
-      if (mutex_.LockOrPark(this) == AwaitStatus::Resume) {
-        return coroutine;
-      }
-
-      return std::noop_coroutine();
-    }
-
-    UniqueLock await_resume() {
-      return UniqueLock(mutex_);
-    }
-
-    void Schedule() noexcept {
-      scheduler_->Schedule(this);
+  struct ScheduleTask : public executors::TaskBase {
+    void Schedule() {
+      scheduler->Schedule(this);
     }
 
     void Run() noexcept {
-      waiting_coro_.resume();
+      suspended_coro.resume();
     }
 
-    LockAwaiter* next{nullptr};
+    std::coroutine_handle<> suspended_coro{nullptr};
+    runtime::IScheduler* scheduler{nullptr};
+  };
 
-   private:
-    Mutex& mutex_;
-    runtime::IScheduler* scheduler_{nullptr};
-    std::coroutine_handle<> waiting_coro_{nullptr};
+  struct LockAwaiter : public support::ForwardListNode<LockAwaiter> {
+    explicit LockAwaiter(Mutex* mutex) noexcept
+        : mutex{mutex} {
+      assert(mutex);
+    }
+
+    bool await_ready() const noexcept {
+      return false;  // TODO: change to try_lock
+    }
+
+    template <class T>
+    bool await_suspend(std::coroutine_handle<TaskPromise<T>> awaiter) noexcept {
+      TaskPromise<T>& promise = awaiter.promise();
+      auto& params = promise.GetParameters();
+
+      // save scheduler
+      params.CheckActiveScheduler();
+      schedule_task.scheduler = params.scheduler_;
+
+      // save coro handler
+      schedule_task.suspended_coro = awaiter;
+
+      return mutex->LockOrPark(this) != LockResult::Acquired;
+    }
+
+    UniqueLock await_resume() const noexcept {
+      return UniqueLock{mutex};
+    }
+
+    Mutex* mutex{nullptr};
+    ScheduleTask schedule_task;
   };
 
  public:
   inline auto ScopedLock() noexcept {
-    return LockAwaiter{*this};
-  }
-
-  bool TryLock() {
-    auto unlock_state = MutexState::Unlocked;
-    return state_.compare_exchange_strong(unlock_state,
-                                          MutexState::LockedEmptyPushQueue);
+    return LockAwaiter{this};
   }
 
   void Unlock() {
-    if (waiters_head_ != nullptr) {
-      ExtractHead()->Schedule();
+    assert(state_.load() != Unlocked);
+
+    if (!waiters_list_.IsEmpty()) {
+      LockAwaiter* head = waiters_list_.PopFront();
+      head->schedule_task.Schedule();
     } else {
-      auto cur_state = state_.load();
-
-      while (true) {
-        if (cur_state == MutexState::LockedEmptyPushQueue) {
-          if (state_.compare_exchange_weak(cur_state, MutexState::Unlocked)) {
-            return;
-          }
-        } else {
-          LockAwaiter* awaiters = CastToLockAwaiter(
-              state_.exchange(MutexState::LockedEmptyPushQueue));
-
-          waiters_head_ = Reverse(awaiters);
-          ExtractHead()->Schedule();
-
-          return;
-        }
+      auto old_state = LockedNoWaiters;
+      if (state_.compare_exchange_strong(old_state, Unlocked)) {
+        return;
       }
+
+      old_state = state_.exchange(LockedNoWaiters);
+      assert(old_state != LockedNoWaiters && old_state != Unlocked);
+
+      LockAwaiter* tail = reinterpret_cast<LockAwaiter*>(old_state);
+      PushReversed(tail);
+
+      assert(!waiters_list_.IsEmpty());
+
+      LockAwaiter* head = waiters_list_.PopFront();
+      head->schedule_task.Schedule();
     }
   }
 
  private:
-  enum MutexState : uintptr_t {
-    Unlocked = 0,
-    LockedEmptyPushQueue = 1,
-    // LockAwaiter* ptr
+  enum State : uintptr_t {
+    LockedNoWaiters = 0,
+    Unlocked = 1,
+    // pointer to waiters intrusive queue
   };
 
-  enum class AwaitStatus {
-    Resume,
-    Suspend,
+  enum class LockResult {
+    Acquired,
+    Parked,
   };
 
  private:
-  LockAwaiter* CastToLockAwaiter(MutexState state) {
-    return reinterpret_cast<LockAwaiter*>(state);
+  void PushReversed(LockAwaiter* head) {
+    assert(waiters_list_.IsEmpty());
+
+    while (head != nullptr) {
+      waiters_list_.PushFront(std::exchange(head, head->next->Unwrap()));
+    }
   }
 
-  MutexState CastToMutexState(LockAwaiter* awaiter) {
-    uintptr_t ptr = (uintptr_t)(void*)awaiter;
-    return (MutexState)ptr;
-  }
-
-  AwaitStatus LockOrPark(LockAwaiter* awaiter) {
-    auto cur_state = state_.load();
+  LockResult LockOrPark(LockAwaiter* awaiter) {
+    auto old_state = state_.load();
 
     while (true) {
-      if (cur_state == MutexState::Unlocked) {
-        if (state_.compare_exchange_weak(cur_state,
-                                         MutexState::LockedEmptyPushQueue)) {
-          return AwaitStatus::Resume;
+      if (old_state == Unlocked) {
+        if (state_.compare_exchange_weak(old_state, LockedNoWaiters)) {
+          return LockResult::Acquired;
         }
       } else {
-        if (cur_state == MutexState::LockedEmptyPushQueue) {
-          awaiter->next = nullptr;
-        } else {
-          awaiter->next = CastToLockAwaiter(cur_state);
-        }
-
-        if (state_.compare_exchange_weak(cur_state,
-                                         CastToMutexState(awaiter))) {
-          return AwaitStatus::Suspend;
+        awaiter->next = reinterpret_cast<LockAwaiter*>(old_state);
+        auto updated = static_cast<State>(reinterpret_cast<uintptr_t>(awaiter));
+        if (state_.compare_exchange_weak(old_state, updated)) {
+          return LockResult::Parked;
         }
       }
     }
   }
 
  private:
-  LockAwaiter* ExtractHead() {
-    return std::exchange(waiters_head_, waiters_head_->next);
-  }
-
-  LockAwaiter* Reverse(LockAwaiter* cur) {
-    LockAwaiter* prev = nullptr;
-
-    while (cur != nullptr) {
-      LockAwaiter* next = cur->next;
-      cur->next = prev;
-      prev = cur;
-      cur = next;
-    }
-
-    return prev;
-  }
-
- private:
-  std::atomic<MutexState> state_{MutexState::Unlocked};
-  LockAwaiter* waiters_head_{nullptr};
+  std::atomic<State> state_{Unlocked};
+  support::ForwardList<LockAwaiter> waiters_list_;
 };
 
 }  // namespace harmony::coro
