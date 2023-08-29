@@ -1,3 +1,5 @@
+#include <exception>
+
 #include <harmony/coro/run/impl/detach_task.hpp>
 
 namespace harmony::coro::impl {
@@ -26,6 +28,7 @@ void DetachTask::DetachPromise::return_void() noexcept {
 }
 
 void DetachTask::DetachPromise::unhandled_exception() noexcept {
+  std::terminate();
 }
 
 DetachTask::DetachPromise::FinalAwaiter

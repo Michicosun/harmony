@@ -25,7 +25,7 @@ class RunTask {
     coro_.promise().Start(event);
   }
 
-  T UnwrapResult() noexcept {
+  T UnwrapResult() {
     return coro_.promise().UnwrapResult();
   }
 
