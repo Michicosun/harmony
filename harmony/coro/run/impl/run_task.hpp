@@ -13,7 +13,7 @@ class RunTask {
 
   ~RunTask() {
     if (coro_ && !coro_.done()) {
-      std::terminate();
+      support::Terminate("task was destroyed before coroutine was completed");
     }
 
     if (coro_ && coro_.done()) {

@@ -1,10 +1,9 @@
 #pragma once
 
-#include <exception>
-#include <iostream>
 #include <optional>
-#include <stdexcept>
 #include <utility>
+
+#include <harmony/support/terminate/terminate.hpp>
 
 namespace harmony::result {
 
@@ -30,7 +29,7 @@ class Result {
 
   T Unwrap() {
     if (!value_ && !e_ptr_) {
-      std::terminate();
+      support::Terminate("result must have either result or exception");
     }
 
     if (value_.has_value()) {

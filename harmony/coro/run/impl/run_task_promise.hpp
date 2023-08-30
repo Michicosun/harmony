@@ -2,7 +2,6 @@
 
 #include <coroutine>
 
-#include <exception>
 #include <harmony/result/result.hpp>
 #include <harmony/support/event/event.hpp>
 

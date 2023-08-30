@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <coroutine>
-#include <exception>
 #include <utility>
 
 #include <harmony/result/result.hpp>

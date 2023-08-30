@@ -1,10 +1,10 @@
 #pragma once
 
 #include <coroutine>
-#include <exception>
 #include <utility>
 
 #include <harmony/coro/core/task_promise.hpp>
+#include <harmony/support/terminate/terminate.hpp>
 
 namespace harmony::coro {
 
@@ -40,7 +40,7 @@ class Task {
 
   ~Task() {
     if (coro_ && !coro_.done()) {
-      std::terminate();
+      support::Terminate("task was destroyed before coroutine was completed");
     }
 
     if (coro_ && coro_.done()) {
