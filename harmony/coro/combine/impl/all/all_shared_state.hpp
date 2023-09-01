@@ -45,7 +45,7 @@ class AllSharedState : public AllSharedStateBase {
 
   void UnwrapError() {
     if (e_ptr_ != nullptr) {
-      std::rethrow_exception(e_ptr_);
+      std::rethrow_exception(std::exchange(e_ptr_, nullptr));
     }
   }
 
