@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include <harmony/support/wait_group/wait_group.hpp>
 #include <harmony/threads/futex.hpp>
 

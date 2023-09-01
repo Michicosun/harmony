@@ -14,8 +14,8 @@ add_compile_options(-Wno-error=unused-command-line-argument)
 
 add_compile_options(-gdwarf-4)
 
-# libc++
-add_compile_options(-stdlib=libc++)
-add_link_options(-stdlib=libc++)
+# libstdc++
+add_compile_options(-stdlib=libstdc++)
+add_link_options(-stdlib=libstdc++)
 
 Log("C++ standard: ${CMAKE_CXX_STANDARD}")
