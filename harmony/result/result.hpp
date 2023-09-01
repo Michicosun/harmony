@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+#include <exception>
 #include <optional>
 #include <utility>
 
@@ -25,6 +27,24 @@ class Result {
 
   void SetValue(T&& value) {
     value_.emplace(std::forward<T>(value));
+  }
+
+  bool HasValue() const {
+    return value_.has_value();
+  }
+
+  bool HasError() const {
+    return e_ptr_ != nullptr;
+  }
+
+  std::exception_ptr Error() {
+    assert(HasError());
+    return std::exchange(e_ptr_, nullptr);
+  }
+
+  T Value() {
+    assert(HasValue());
+    return std::move(value_.value());
   }
 
   T Unwrap() {

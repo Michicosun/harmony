@@ -1,20 +1,25 @@
 #pragma once
 
+#include <harmony/coro/combine/impl/all/all_shared_state_base.hpp>
+#include <harmony/coro/combine/impl/all/all_task_promise.hpp>
 #include <harmony/coro/concepts/awaitable.hpp>
-#include <harmony/coro/run/impl/run_task_promise.hpp>
 #include <harmony/coro/traits/awaitable.hpp>
 
 namespace harmony::coro::impl {
 
 template <class T>
-class RunTask {
+class AllTask {
  public:
-  using promise_type = RunTaskPromise<T>;
+  using promise_type = AllTaskPromise<T>;
 
-  ~RunTask() {
+  AllTask(AllTask&& t) noexcept
+      : coro_(std::exchange(t.coro_, {})) {
+  }
+
+  ~AllTask() {
     if (coro_ && !coro_.done()) {
       support::Terminate(
-          "run_task was destroyed before coroutine was completed");
+          "all_task was destroyed before coroutine was completed");
     }
 
     if (coro_ && coro_.done()) {
@@ -22,8 +27,8 @@ class RunTask {
     }
   }
 
-  void Start(support::MPSCEvent& event) {
-    coro_.promise().Start(event);
+  void Start(AllSharedStateBase* shared_state) {
+    coro_.promise().Start(shared_state);
   }
 
   T UnwrapResult() {
@@ -31,9 +36,9 @@ class RunTask {
   }
 
  private:
-  friend class RunTaskPromise<T>;
+  friend class AllTaskPromise<T>;
 
-  explicit RunTask(std::coroutine_handle<promise_type> h) noexcept
+  explicit AllTask(std::coroutine_handle<promise_type> h) noexcept
       : coro_(h) {
   }
 
@@ -43,7 +48,7 @@ class RunTask {
 
 template <concepts::Awaitable Awaitable,
           class ReturnType = traits::AwaitableTraits<Awaitable>::AwaiterReturnT>
-static RunTask<ReturnType> CreateRunTask(Awaitable&& object) {
+static AllTask<ReturnType> CreateAllTask(Awaitable&& object) {
   auto saved_object = std::move(object);
   co_return co_await saved_object;
 }
