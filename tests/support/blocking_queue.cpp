@@ -5,8 +5,8 @@
 
 #include <gtest/gtest.h>
 
-#include <harmony/support/event/event.hpp>
 #include <harmony/support/queues/blocking_queue.hpp>
+#include <harmony/support/wait_group/wait_group.hpp>
 
 class TestNode : public harmony::support::ForwardListNode<TestNode> {
  public:
@@ -39,14 +39,12 @@ TEST(BlockingQueueTest, Simple) {
 
 TEST(BlockingQueueTest, Race) {
   harmony::support::UnboundedBlockingQueue<TestNode> queue;
-  harmony::support::MPSCEvent event;
 
   const size_t max_concurrent_threads = std::thread::hardware_concurrency();
   const size_t produce_count = 10'000;
   const size_t group = std::max(1ul, max_concurrent_threads / 2);
 
   std::atomic<size_t> sum = 0;
-  std::atomic<size_t> producers_running = group;
   std::vector<std::thread> consumers;
   std::vector<std::thread> producers;
 
@@ -54,10 +52,6 @@ TEST(BlockingQueueTest, Race) {
     producers.push_back(std::thread([&]() {
       for (size_t j = 1; j <= produce_count; ++j) {
         queue.Push(new TestNode(j));
-      }
-
-      if (producers_running.fetch_sub(1) == 1) {
-        event.Complete();
       }
     }));
   }
@@ -69,8 +63,6 @@ TEST(BlockingQueueTest, Race) {
       }
     }));
   }
-
-  event.Wait();
 
   for (auto&& producer : producers) {
     producer.join();
