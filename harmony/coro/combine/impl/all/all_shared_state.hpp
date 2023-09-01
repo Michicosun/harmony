@@ -27,7 +27,7 @@ class AllSharedState : public AllSharedStateBase {
 
     StartTasks(std::index_sequence_for<Results...>{});
 
-    if (consensus_.DoneStartingTasks() && has_saved_error_.load()) {
+    if (consensus_.DoneStartingTasks()) {
       waiter_.resume();
     }
   }
