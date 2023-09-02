@@ -44,6 +44,7 @@ class AllSharedStateBase : public support::RefCounter {
   void Interrupt(std::exception_ptr ptr) {
     if (!has_saved_error_.exchange(true)) {
       e_ptr_ = ptr;
+      stop_source_.request_stop();
 
       if (consensus_.CompleteResult()) {
         waiter_.resume();
