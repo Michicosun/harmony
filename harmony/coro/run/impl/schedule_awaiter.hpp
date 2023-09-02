@@ -1,5 +1,6 @@
 #pragma once
 
+#include <harmony/coro/concepts/base_task.hpp>
 #include <harmony/coro/core/task_promise.hpp>
 #include <harmony/runtime/scheduler.hpp>
 
@@ -11,9 +12,9 @@ class ScheduleAwaiter : public executors::TaskBase {
 
   bool await_ready() noexcept;
 
-  template <class T>
-  void await_suspend(std::coroutine_handle<TaskPromise<T>> coroutine) noexcept {
-    TaskPromise<T>& promise = coroutine.promise();
+  template <concepts::BasePromiseConvertible Promise>
+  void await_suspend(std::coroutine_handle<Promise> coroutine) noexcept {
+    BasePromise& promise = coroutine.promise();
 
     // set new scheduler to coro
     promise.GetParameters().scheduler_ = scheduler_;

@@ -4,6 +4,7 @@
 #include <coroutine>
 #include <stop_token>
 
+#include <harmony/coro/concepts/base_promise.hpp>
 #include <harmony/coro/concepts/base_task.hpp>
 #include <harmony/runtime/scheduler.hpp>
 
@@ -32,7 +33,8 @@ class BasePromise {
       return true;
     }
 
-    void await_suspend(std::coroutine_handle<>) {
+    template <concepts::BasePromiseConvertible Promise>
+    void await_suspend(std::coroutine_handle<Promise>) {
     }
 
     auto await_resume() noexcept {

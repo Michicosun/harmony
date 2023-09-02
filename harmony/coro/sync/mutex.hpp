@@ -1,9 +1,6 @@
 #pragma once
 
-#include <atomic>
-#include <cassert>
-#include <coroutine>
-
+#include <harmony/coro/concepts/base_task.hpp>
 #include <harmony/coro/core/task_promise.hpp>
 #include <harmony/runtime/executors/task.hpp>
 #include <harmony/runtime/scheduler.hpp>
@@ -68,9 +65,9 @@ class Mutex {
       return mutex->TryLock();
     }
 
-    template <class T>
-    bool await_suspend(std::coroutine_handle<TaskPromise<T>> awaiter) noexcept {
-      TaskPromise<T>& promise = awaiter.promise();
+    template <concepts::BasePromiseConvertible Promise>
+    bool await_suspend(std::coroutine_handle<Promise> awaiter) noexcept {
+      BasePromise& promise = awaiter.promise();
       auto& params = promise.GetParameters();
 
       // save scheduler
