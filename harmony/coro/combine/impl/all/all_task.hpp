@@ -45,10 +45,11 @@ class AllTask {
   void SetParameters(runtime::IScheduler* scheduler,
                      std::stop_token stop_token) {
     AllTaskPromise<T>& promise = GetPromise();
+    auto& parameters = promise.GetParameters();
 
     // setup parameters for wrapper task to push them inside the actual tasks
-    promise.GetParameters().scheduler_ = scheduler;
-    promise.GetParameters().stop_token_ = stop_token;
+    parameters.scheduler = scheduler;
+    parameters.stop_token = stop_token;
   }
 
  private:

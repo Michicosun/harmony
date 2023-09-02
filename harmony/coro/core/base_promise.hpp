@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <coroutine>
+#include <exception>
 #include <stop_token>
 
 #include <harmony/coro/concepts/base_promise.hpp>
@@ -10,20 +11,30 @@
 
 namespace harmony::coro {
 
+struct Cancelled : public std::exception {
+  using std::exception::exception;
+};
+
 class ThisCoroType {};
 constexpr ThisCoroType kThisCoro;
 
 struct CoroParameters {
-  runtime::IScheduler* scheduler_{nullptr};
-  std::stop_token stop_token_;
+  runtime::IScheduler* scheduler{nullptr};
+  std::stop_token stop_token;
+
+  void CheckCancel() const {
+    if (stop_token.stop_requested()) {
+      throw Cancelled{};
+    }
+  }
 
   void CheckActiveScheduler() const {
-    assert(scheduler_);
+    assert(scheduler);
   }
 
   void MergeFrom(const CoroParameters& other) {
-    scheduler_ = other.scheduler_;
-    stop_token_ = other.stop_token_;
+    scheduler = other.scheduler;
+    stop_token = other.stop_token;
   }
 };
 

@@ -15,9 +15,10 @@ class ScheduleAwaiter : public executors::TaskBase {
   template <concepts::BasePromiseConvertible Promise>
   void await_suspend(std::coroutine_handle<Promise> coroutine) noexcept {
     BasePromise& promise = coroutine.promise();
+    auto& parameters = promise.GetParameters();
 
     // set new scheduler to coro
-    promise.GetParameters().scheduler_ = scheduler_;
+    parameters.scheduler = scheduler_;
 
     // schedule awake
     coroutine_ = coroutine;

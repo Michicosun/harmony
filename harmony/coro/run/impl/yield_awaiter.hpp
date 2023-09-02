@@ -13,14 +13,14 @@ class YieldAwaiter : public executors::TaskBase {
   template <concepts::BasePromiseConvertible Promise>
   void await_suspend(std::coroutine_handle<Promise> coroutine) noexcept {
     BasePromise& promise = coroutine.promise();
+    auto& parameters = promise.GetParameters();
 
     // extract current scheduler and check it
-    auto coro_parameters = promise.GetParameters();
-    coro_parameters.CheckActiveScheduler();
+    parameters.CheckActiveScheduler();
 
     // schedule awake
     coroutine_ = coroutine;
-    coro_parameters.scheduler_->Schedule(this);
+    parameters.scheduler->Schedule(this);
   }
 
   void await_resume() noexcept;

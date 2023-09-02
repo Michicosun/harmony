@@ -68,11 +68,11 @@ class Mutex {
     template <concepts::BasePromiseConvertible Promise>
     bool await_suspend(std::coroutine_handle<Promise> awaiter) noexcept {
       BasePromise& promise = awaiter.promise();
-      auto& params = promise.GetParameters();
+      auto& parameters = promise.GetParameters();
 
       // save scheduler
-      params.CheckActiveScheduler();
-      schedule_task.scheduler = params.scheduler_;
+      parameters.CheckActiveScheduler();
+      schedule_task.scheduler = parameters.scheduler;
 
       // save coro handler
       schedule_task.suspended_coro = awaiter;

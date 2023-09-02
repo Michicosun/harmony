@@ -29,13 +29,13 @@ class AllAwaiter {
   template <concepts::BasePromiseConvertible Promise>
   void await_suspend(std::coroutine_handle<Promise> waiter) {
     BasePromise& promise = waiter.promise();
+    auto& parameters = promise.GetParameters();
 
     // register waiter for wake up
     shared_state_->Register(waiter);
 
     // start tasks inside waiter scheduler
-    auto& parameters = promise.GetParameters();
-    shared_state_->StartTasks(parameters.scheduler_);
+    shared_state_->StartTasks(parameters.scheduler);
   }
 
   std::tuple<Results...> await_resume() {
