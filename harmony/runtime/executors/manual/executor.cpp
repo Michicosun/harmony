@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstddef>
 
 #include <harmony/runtime/executors/manual/executor.hpp>
@@ -48,6 +49,17 @@ size_t ManualExecutor::TasksInQueue() const {
 
 bool ManualExecutor::IsEmpty() const {
   return tasks_.IsEmpty();
+}
+
+void ManualExecutor::Start() {
+}
+
+void ManualExecutor::Stop() {
+  assert(IsEmpty());
+}
+
+void ManualExecutor::WaitIdle() {
+  assert(IsEmpty());
 }
 
 }  // namespace harmony::executors

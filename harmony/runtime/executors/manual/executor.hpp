@@ -21,6 +21,10 @@ class ManualExecutor {
   size_t TasksInQueue() const;
   bool IsEmpty() const;
 
+  void Start();
+  void Stop();
+  void WaitIdle();
+
  private:
   void RunOne();
 

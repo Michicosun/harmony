@@ -35,6 +35,12 @@ class Scheduler : public IScheduler {
     return *this;
   }
 
+ public:
+  Executor& GetExecutor() {
+    return executor_;
+  }
+
+ public:
   void Start() {
     executor_.Start();
   }
