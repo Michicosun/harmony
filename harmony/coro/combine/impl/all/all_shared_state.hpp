@@ -31,6 +31,7 @@ class AllSharedState : public AllSharedStateBase {
     StartTasks(std::index_sequence_for<Results...>{});
 
     if (consensus_.DoneStartingTasks()) {
+      stop_callback_.reset();  // remove upstream stop handler
       waiter_.resume();
     }
   }

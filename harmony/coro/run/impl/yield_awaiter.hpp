@@ -11,16 +11,19 @@ class YieldAwaiter : public executors::TaskBase {
   bool await_ready() noexcept;
 
   template <concepts::BasePromiseConvertible Promise>
-  void await_suspend(std::coroutine_handle<Promise> coroutine) noexcept {
+  void await_suspend(std::coroutine_handle<Promise> coroutine) {
     BasePromise& promise = coroutine.promise();
-    auto& parameters = promise.GetParameters();
+    parameters_ = &promise.GetParameters();
+
+    // check cancel request
+    parameters_->CheckCancel();
 
     // extract current scheduler and check it
-    parameters.CheckActiveScheduler();
+    parameters_->CheckActiveScheduler();
 
     // schedule awake
     coroutine_ = coroutine;
-    parameters.scheduler->Schedule(this);
+    parameters_->scheduler->Schedule(this);
   }
 
   void await_resume() noexcept;
@@ -30,6 +33,7 @@ class YieldAwaiter : public executors::TaskBase {
 
  private:
   std::coroutine_handle<> coroutine_{nullptr};
+  CoroParameters* parameters_{nullptr};
 };
 
 }  // namespace harmony::coro::impl

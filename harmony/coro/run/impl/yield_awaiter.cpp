@@ -7,6 +7,7 @@ bool YieldAwaiter::await_ready() noexcept {
 }
 
 void YieldAwaiter::await_resume() noexcept {
+  parameters_->CheckCancel();
 }
 
 void YieldAwaiter::Run() noexcept {

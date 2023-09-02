@@ -16,6 +16,18 @@ template <class T>
 class AllTask;
 
 class AllSharedStateBase : public support::RefCounter {
+  struct UpstreamStopHandler {
+    AllSharedStateBase* shared_state{nullptr};
+
+    explicit UpstreamStopHandler(AllSharedStateBase* shared_state)
+        : shared_state{shared_state} {
+    }
+
+    void operator()() {
+      shared_state->stop_source_.request_stop();
+    }
+  };
+
  public:
   explicit AllSharedStateBase(size_t tasks_cnt) {
     running_cnt_.fetch_add(tasks_cnt + 1);  // +1 waiter
@@ -24,8 +36,9 @@ class AllSharedStateBase : public support::RefCounter {
 
   virtual ~AllSharedStateBase() = default;
 
-  void Register(std::coroutine_handle<> waiter) {
+  void Register(std::coroutine_handle<> waiter, std::stop_token stop_token) {
     waiter_ = waiter;
+    stop_callback_.emplace(stop_token, UpstreamStopHandler{this});
   }
 
  public:
@@ -34,6 +47,7 @@ class AllSharedStateBase : public support::RefCounter {
 
     if (prev_running_cnt == 2) {  // last is waiter
       if (consensus_.CompleteResult()) {
+        stop_callback_.reset();  // remove upstream stop handler
         waiter_.resume();
       }
     }
@@ -47,6 +61,7 @@ class AllSharedStateBase : public support::RefCounter {
       stop_source_.request_stop();
 
       if (consensus_.CompleteResult()) {
+        stop_callback_.reset();  // remove upstream stop handler
         waiter_.resume();
       }
     }
@@ -64,6 +79,7 @@ class AllSharedStateBase : public support::RefCounter {
 
   // cancellation
   std::stop_source stop_source_;
+  std::optional<std::stop_callback<UpstreamStopHandler>> stop_callback_;
 };
 
 }  // namespace harmony::coro::impl

@@ -29,21 +29,26 @@ class AllAwaiter {
   template <concepts::BasePromiseConvertible Promise>
   void await_suspend(std::coroutine_handle<Promise> waiter) {
     BasePromise& promise = waiter.promise();
-    auto& parameters = promise.GetParameters();
+    parameters_ = &promise.GetParameters();
+
+    // check cancel request
+    parameters_->CheckCancel();
 
     // register waiter for wake up
-    shared_state_->Register(waiter);
+    shared_state_->Register(waiter, parameters_->stop_token);
 
     // start tasks inside waiter scheduler
-    shared_state_->StartTasks(parameters.scheduler);
+    shared_state_->StartTasks(parameters_->scheduler);
   }
 
   std::tuple<Results...> await_resume() {
+    parameters_->CheckCancel();
     return shared_state_->Unwrap();
   }
 
  private:
   AllSharedState<Results...>* shared_state_{nullptr};
+  CoroParameters* parameters_{nullptr};
 };
 
 }  // namespace harmony::coro::impl
