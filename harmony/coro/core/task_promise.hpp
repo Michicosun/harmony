@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cassert>
-#include <coroutine>
-#include <utility>
-
+#include <harmony/coro/core/base_promise.hpp>
 #include <harmony/result/result.hpp>
 #include <harmony/runtime/scheduler.hpp>
 
@@ -12,23 +9,8 @@ namespace harmony::coro {
 template <class T>
 class Task;
 
-class ThisCoroType {};
-constexpr ThisCoroType kThisCoro;
-
-struct CoroParameters {
-  runtime::IScheduler* scheduler_{nullptr};
-
-  void CheckActiveScheduler() const {
-    assert(scheduler_);
-  }
-
-  void MergeFrom(const CoroParameters& other) {
-    scheduler_ = other.scheduler_;
-  }
-};
-
 template <class T>
-class TaskPromise {
+class TaskPromise : public BasePromise {
   using handle = std::coroutine_handle<TaskPromise>;
 
   struct FinalAwaiter {
@@ -42,21 +24,6 @@ class TaskPromise {
 
     void await_resume() noexcept {
     }
-  };
-
-  struct CoroParametersAwaiter {
-    constexpr bool await_ready() {
-      return true;
-    }
-
-    void await_suspend(handle) {
-    }
-
-    auto await_resume() noexcept {
-      return promise->GetParameters();
-    }
-
-    TaskPromise* promise;
   };
 
  public:
@@ -80,39 +47,6 @@ class TaskPromise {
     return {};
   }
 
-  template <typename U>
-  Task<U>& await_transform(Task<U>& other_task) {
-    TaskPromise<U>& other_promise = other_task.GetPromise();
-
-    // push parameters to child task
-    other_promise.GetParameters().MergeFrom(parameters_);
-
-    return other_task;
-  }
-
-  template <typename U>
-  Task<U> await_transform(Task<U>&& other_task) {
-    TaskPromise<U>& other_promise = other_task.GetPromise();
-
-    // push parameters to child task
-    other_promise.GetParameters().MergeFrom(parameters_);
-
-    return std::move(other_task);
-  }
-
-  auto await_transform(const ThisCoroType&) {
-    return CoroParametersAwaiter{this};
-  }
-
-  decltype(auto) await_transform(auto&& awaiter) {
-    return std::forward<decltype(awaiter)>(awaiter);
-  }
-
- public:
-  CoroParameters& GetParameters() {
-    return parameters_;
-  }
-
  private:
   void SetContinuation(std::coroutine_handle<> continuation) {
     continuation_ = std::move(continuation);
@@ -132,11 +66,9 @@ class TaskPromise {
 
  private:
   friend class Task<T>;
-  friend struct CoroParametersAwaiter;
 
   result::Result<T> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
-  CoroParameters parameters_;
 };
 
 }  // namespace harmony::coro

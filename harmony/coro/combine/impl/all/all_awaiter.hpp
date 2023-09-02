@@ -3,6 +3,8 @@
 #include <harmony/coro/combine/impl/all/all_shared_state.hpp>
 #include <harmony/coro/combine/impl/all/all_task.hpp>
 #include <harmony/coro/concepts/awaitable.hpp>
+#include <harmony/coro/concepts/base_promise.hpp>
+#include <harmony/coro/concepts/base_task.hpp>
 #include <harmony/coro/traits/awaitable.hpp>
 
 namespace harmony::coro::impl {
@@ -24,9 +26,16 @@ class AllAwaiter {
     return false;
   }
 
-  void await_suspend(std::coroutine_handle<> waiter) {
+  template <concepts::BasePromiseConvertible Promise>
+  void await_suspend(std::coroutine_handle<Promise> waiter) {
+    BasePromise& promise = waiter.promise();
+
+    // register waiter for wake up
     shared_state_->Register(waiter);
-    shared_state_->StartTasks();
+
+    // start tasks inside waiter scheduler
+    auto& parameters = promise.GetParameters();
+    shared_state_->StartTasks(parameters.scheduler_);
   }
 
   std::tuple<Results...> await_resume() {

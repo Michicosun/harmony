@@ -1,6 +1,7 @@
 #pragma once
 
 #include <harmony/coro/combine/impl/all/all_shared_state_base.hpp>
+#include <harmony/coro/core/base_promise.hpp>
 #include <harmony/result/result.hpp>
 
 namespace harmony::coro::impl {
@@ -9,7 +10,7 @@ template <class T>
 class AllTask;
 
 template <class T>
-class AllTaskPromise {
+class AllTaskPromise : public BasePromise {
   using handle = std::coroutine_handle<AllTaskPromise>;
 
   struct FinalAwaiter {

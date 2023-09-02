@@ -4,6 +4,7 @@
 #include <harmony/coro/combine/impl/all/all_task_promise.hpp>
 #include <harmony/coro/concepts/awaitable.hpp>
 #include <harmony/coro/traits/awaitable.hpp>
+#include <harmony/runtime/scheduler.hpp>
 
 namespace harmony::coro::impl {
 
@@ -27,12 +28,27 @@ class AllTask {
     }
   }
 
+ public:
   void Start(AllSharedStateBase* shared_state) {
     coro_.promise().Start(shared_state);
   }
 
   T UnwrapResult() {
     return coro_.promise().UnwrapResult();
+  }
+
+  promise_type& GetPromise() {
+    return coro_.promise();
+  }
+
+ public:
+  void SetParameters(runtime::IScheduler* scheduler,
+                     std::stop_token stop_token) {
+    AllTaskPromise<T>& promise = GetPromise();
+
+    // setup parameters for wrapper task to push them inside the actual tasks
+    promise.GetParameters().scheduler_ = scheduler;
+    promise.GetParameters().stop_token_ = stop_token;
   }
 
  private:
