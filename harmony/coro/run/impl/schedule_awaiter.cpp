@@ -13,7 +13,8 @@ bool ScheduleAwaiter::await_ready() noexcept {
   return false;
 }
 
-void ScheduleAwaiter::await_resume() noexcept {
+void ScheduleAwaiter::await_resume() {
+  CheckCancel(parameters_);
 }
 
 void ScheduleAwaiter::Run() noexcept {

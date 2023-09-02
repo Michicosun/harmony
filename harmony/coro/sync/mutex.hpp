@@ -66,13 +66,16 @@ class Mutex {
     }
 
     template <concepts::BasePromiseConvertible Promise>
-    bool await_suspend(std::coroutine_handle<Promise> awaiter) noexcept {
+    bool await_suspend(std::coroutine_handle<Promise> awaiter) {
       BasePromise& promise = awaiter.promise();
-      auto& parameters = promise.GetParameters();
+      parameters_ = &promise.GetParameters();
+
+      // check cancel request
+      CheckCancel(parameters_);
 
       // save scheduler
-      parameters.CheckActiveScheduler();
-      schedule_task.scheduler = parameters.scheduler;
+      parameters_->CheckActiveScheduler();
+      schedule_task.scheduler = parameters_->scheduler;
 
       // save coro handler
       schedule_task.suspended_coro = awaiter;
@@ -80,11 +83,14 @@ class Mutex {
       return mutex->LockOrPark(this) != LockResult::Acquired;
     }
 
-    UniqueLock await_resume() const noexcept {
-      return UniqueLock{mutex, strategy};
+    UniqueLock await_resume() const {
+      UniqueLock unlocker{mutex, strategy};
+      CheckCancel(parameters_);
+      return unlocker;
     }
 
     Mutex* mutex{nullptr};
+    CoroParameters* parameters_{nullptr};
     ScheduleTask schedule_task;
     UnlockStrategy strategy;
   };

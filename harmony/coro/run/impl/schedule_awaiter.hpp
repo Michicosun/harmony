@@ -13,19 +13,22 @@ class ScheduleAwaiter : public executors::TaskBase {
   bool await_ready() noexcept;
 
   template <concepts::BasePromiseConvertible Promise>
-  void await_suspend(std::coroutine_handle<Promise> coroutine) noexcept {
+  void await_suspend(std::coroutine_handle<Promise> coroutine) {
     BasePromise& promise = coroutine.promise();
-    auto& parameters = promise.GetParameters();
+    parameters_ = &promise.GetParameters();
+
+    // check cancel request
+    CheckCancel(parameters_);
 
     // set new scheduler to coro
-    parameters.scheduler = scheduler_;
+    parameters_->scheduler = scheduler_;
 
     // schedule awake
     coroutine_ = coroutine;
     scheduler_->Schedule(this);
   }
 
-  void await_resume() noexcept;
+  void await_resume();
 
  public:
   void Run() noexcept override;
@@ -33,6 +36,7 @@ class ScheduleAwaiter : public executors::TaskBase {
  private:
   runtime::IScheduler* scheduler_{nullptr};
   std::coroutine_handle<> coroutine_{nullptr};
+  CoroParameters* parameters_{nullptr};
 };
 
 }  // namespace harmony::coro::impl

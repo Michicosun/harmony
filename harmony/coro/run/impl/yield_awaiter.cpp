@@ -6,8 +6,8 @@ bool YieldAwaiter::await_ready() noexcept {
   return false;
 }
 
-void YieldAwaiter::await_resume() noexcept {
-  parameters_->CheckCancel();
+void YieldAwaiter::await_resume() {
+  CheckCancel(parameters_);
 }
 
 void YieldAwaiter::Run() noexcept {

@@ -1,42 +1,13 @@
 #pragma once
 
-#include <cassert>
 #include <coroutine>
-#include <exception>
-#include <stop_token>
 
 #include <harmony/coro/concepts/base_promise.hpp>
 #include <harmony/coro/concepts/base_task.hpp>
+#include <harmony/coro/core/task_parameters.hpp>
 #include <harmony/runtime/scheduler.hpp>
 
 namespace harmony::coro {
-
-struct Cancelled : public std::exception {
-  using std::exception::exception;
-};
-
-class ThisCoroType {};
-constexpr ThisCoroType kThisCoro;
-
-struct CoroParameters {
-  runtime::IScheduler* scheduler{nullptr};
-  std::stop_token stop_token;
-
-  void CheckCancel() const {
-    if (stop_token.stop_requested()) {
-      throw Cancelled{};
-    }
-  }
-
-  void CheckActiveScheduler() const {
-    assert(scheduler);
-  }
-
-  void MergeFrom(const CoroParameters& other) {
-    scheduler = other.scheduler;
-    stop_token = other.stop_token;
-  }
-};
 
 class BasePromise {
   struct CoroParametersAwaiter {

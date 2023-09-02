@@ -1,12 +1,13 @@
 #pragma once
 
 #include <harmony/coro/concepts/awaitable.hpp>
+#include <harmony/coro/core/base_promise.hpp>
 #include <harmony/coro/traits/awaitable.hpp>
 
 namespace harmony::coro::impl {
 
 class DetachTask {
-  class DetachPromise {
+  class DetachPromise : public BasePromise {
     using handle = std::coroutine_handle<DetachPromise>;
 
     struct FinalAwaiter {

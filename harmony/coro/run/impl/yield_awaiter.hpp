@@ -16,7 +16,7 @@ class YieldAwaiter : public executors::TaskBase {
     parameters_ = &promise.GetParameters();
 
     // check cancel request
-    parameters_->CheckCancel();
+    CheckCancel(parameters_);
 
     // extract current scheduler and check it
     parameters_->CheckActiveScheduler();
@@ -26,7 +26,7 @@ class YieldAwaiter : public executors::TaskBase {
     parameters_->scheduler->Schedule(this);
   }
 
-  void await_resume() noexcept;
+  void await_resume();
 
  public:
   void Run() noexcept override;

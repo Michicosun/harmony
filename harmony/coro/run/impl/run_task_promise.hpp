@@ -2,6 +2,7 @@
 
 #include <coroutine>
 
+#include <harmony/coro/core/base_promise.hpp>
 #include <harmony/result/result.hpp>
 #include <harmony/support/event/event.hpp>
 
@@ -11,7 +12,7 @@ template <class T>
 class RunTask;
 
 template <class T>
-class RunTaskPromise {
+class RunTaskPromise : public BasePromise {
   using handle = std::coroutine_handle<RunTaskPromise>;
 
   struct FinalAwaiter {

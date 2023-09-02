@@ -2,6 +2,8 @@
 
 #include <coroutine>
 
+#include <harmony/coro/concepts/base_promise.hpp>
+#include <harmony/coro/core/base_promise.hpp>
 #include <harmony/support/intrusive/forward_list.hpp>
 #include <harmony/support/intrusive/node_unwrap.hpp>
 #include <harmony/support/queues/closable_lock_free_queue.hpp>
@@ -18,16 +20,25 @@ class OneShotEvent {
       return event->awaiters_.IsClosed();
     }
 
-    bool await_suspend(std::coroutine_handle<> coroutine) noexcept {
+    template <concepts::BasePromiseConvertible Promise>
+    bool await_suspend(std::coroutine_handle<Promise> coroutine) {
+      BasePromise& promise = coroutine.promise();
+      parameters_ = &promise.GetParameters();
+
+      // check cancel request
+      CheckCancel(parameters_);
+
       stopped_coroutine = coroutine;
       return event->awaiters_.Push(this);
     }
 
-    void await_resume() noexcept {
+    void await_resume() {
+      CheckCancel(parameters_);
     }
 
     std::coroutine_handle<> stopped_coroutine{nullptr};
     OneShotEvent* event{nullptr};
+    CoroParameters* parameters_{nullptr};
   };
 
  public:

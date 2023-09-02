@@ -19,16 +19,25 @@ class Task {
       return !coro_ || coro_.done();
     }
 
-    auto await_suspend(std::coroutine_handle<> continuation) noexcept {
+    template <concepts::BasePromiseConvertible Promise>
+    auto await_suspend(std::coroutine_handle<Promise> continuation) {
+      BasePromise& promise = continuation.promise();
+      parameters_ = &promise.GetParameters();
+
+      // check cancel request
+      CheckCancel(parameters_);
+
       coro_.promise().SetContinuation(std::move(continuation));
       return coro_;
     }
 
     T await_resume() {
+      CheckCancel(parameters_);
       return coro_.promise().UnwrapResult();
     }
 
     std::coroutine_handle<TaskPromise<T>> coro_;
+    CoroParameters* parameters_{nullptr};
   };
 
  public:

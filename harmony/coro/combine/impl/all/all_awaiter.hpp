@@ -32,7 +32,7 @@ class AllAwaiter {
     parameters_ = &promise.GetParameters();
 
     // check cancel request
-    parameters_->CheckCancel();
+    CheckCancel(parameters_);
 
     // register waiter for wake up
     shared_state_->Register(waiter, parameters_->stop_token);
@@ -42,7 +42,7 @@ class AllAwaiter {
   }
 
   std::tuple<Results...> await_resume() {
-    parameters_->CheckCancel();
+    CheckCancel(parameters_);
     return shared_state_->Unwrap();
   }
 
