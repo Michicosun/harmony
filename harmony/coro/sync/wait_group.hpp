@@ -12,7 +12,8 @@
 namespace harmony::coro {
 
 class WaitGroup {
-  struct WaitAwaiter : public support::ForwardListNode<WaitAwaiter> {
+  struct [[nodiscard]] WaitAwaiter
+      : public support::ForwardListNode<WaitAwaiter> {
     explicit WaitAwaiter(WaitGroup* wait_group)
         : wait_group{wait_group} {
     }

@@ -6,7 +6,7 @@
 
 namespace harmony::coro::impl {
 
-class YieldAwaiter : public executors::TaskBase {
+class [[nodiscard]] YieldAwaiter : public executors::TaskBase {
  public:
   bool await_ready() noexcept;
 

@@ -10,7 +10,7 @@
 namespace harmony::coro::impl {
 
 template <class... Results>
-class AllAwaiter {
+class [[nodiscard]] AllAwaiter {
  public:
   explicit AllAwaiter(AllTask<Results>&&... tasks) {
     shared_state_ =

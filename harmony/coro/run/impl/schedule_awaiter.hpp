@@ -6,7 +6,7 @@
 
 namespace harmony::coro::impl {
 
-class ScheduleAwaiter : public executors::TaskBase {
+class [[nodiscard]] ScheduleAwaiter : public executors::TaskBase {
  public:
   explicit ScheduleAwaiter(runtime::IScheduler* scheduler);
 

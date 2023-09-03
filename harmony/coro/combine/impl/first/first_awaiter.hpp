@@ -10,7 +10,7 @@
 namespace harmony::coro::impl {
 
 template <class T, class... Tasks>
-class FirstAwaiter {
+class [[nodiscard]] FirstAwaiter {
  public:
   explicit FirstAwaiter(Tasks&&... tasks) {
     shared_state_ =

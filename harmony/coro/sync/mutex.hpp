@@ -54,7 +54,8 @@ class Mutex {
     }
   };
 
-  struct LockAwaiter : public support::ForwardListNode<LockAwaiter> {
+  struct [[nodiscard]] LockAwaiter
+      : public support::ForwardListNode<LockAwaiter> {
     explicit LockAwaiter(Mutex* mutex, UnlockStrategy strategy) noexcept
         : mutex{mutex},
           strategy(strategy) {

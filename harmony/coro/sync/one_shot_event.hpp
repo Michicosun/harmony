@@ -11,7 +11,8 @@
 namespace harmony::coro {
 
 class OneShotEvent {
-  struct ReadyAwaiter : public support::ForwardListNode<ReadyAwaiter> {
+  struct [[nodiscard]] ReadyAwaiter
+      : public support::ForwardListNode<ReadyAwaiter> {
     explicit ReadyAwaiter(OneShotEvent* event)
         : event{event} {
     }

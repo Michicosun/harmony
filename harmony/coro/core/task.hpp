@@ -10,7 +10,7 @@ namespace harmony::coro {
 
 template <class T>
 class Task {
-  struct TaskAwaiter {
+  struct [[nodiscard]] TaskAwaiter {
     explicit TaskAwaiter(const Task<T>* task) noexcept
         : task_(task) {
     }
