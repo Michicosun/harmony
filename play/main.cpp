@@ -1,7 +1,17 @@
+#include <chrono>
+#include <cstddef>
+#include <exception>
 #include <iostream>
+#include <stdexcept>
+#include <string>
+#include <thread>
 #include <variant>
 
+#include <harmony/coro/combine/all.hpp>
+#include <harmony/coro/combine/first.hpp>
 #include <harmony/coro/core/task.hpp>
+#include <harmony/coro/core/task_parameters.hpp>
+#include <harmony/coro/core/task_promise.hpp>
 #include <harmony/coro/run/detach.hpp>
 #include <harmony/coro/run/run.hpp>
 #include <harmony/coro/run/schedule.hpp>
@@ -19,40 +29,23 @@ int main() {
   runtime::Scheduler<executors::ComputeExecutor> scheduler(12);
   scheduler.Start();
 
-  auto main = [&](size_t coro_count) -> coro::Task<int> {
+  auto amain = [&]() -> coro::Task<size_t> {
     co_await coro::Schedule(scheduler);
 
-    coro::Mutex mutex;
-    size_t counter = 0;
-
-    coro::WaitGroup wg;
-    wg.Add(coro_count);
-
-    auto contender = [&]() -> coro::Task<std::monostate> {
-      co_await coro::Schedule(scheduler);
-
-      for (size_t j = 0; j < 100000; ++j) {
-        auto lock = co_await mutex.ScopedLock();
-        counter += 1;
-      }
-
-      wg.Done();
-
-      co_return std::monostate{};
+    auto task1 = []() -> coro::Task<size_t> {
+      throw std::runtime_error("error");  // thrown in starter thread
+      co_return 1;
     };
 
-    for (size_t i = 0; i < coro_count; ++i) {
-      coro::Detach(contender());
-    }
+    auto task2 = []() -> coro::Task<size_t> {
+      throw std::runtime_error("error");  // thrown in starter thread
+      co_return 2;
+    };
 
-    co_await wg.Wait();
-
-    std::cout << "DONE: " << counter << std::endl;
-
-    co_return counter;
+    co_return co_await coro::First(task1(), task2());
   };
 
-  coro::Run(main(100));
+  coro::Run(amain());
 
   scheduler.WaitIdle();
   scheduler.Stop();
