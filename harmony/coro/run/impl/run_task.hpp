@@ -12,13 +12,11 @@ class RunTask {
   using promise_type = RunTaskPromise<T>;
 
   ~RunTask() {
-    if (coro_ && !coro_.done()) {
-      support::Terminate(
-          "run_task was destroyed before coroutine was completed");
-    }
-
     if (coro_ && coro_.done()) {
       coro_.destroy();
+    } else if (coro_ && !coro_.done()) {
+      support::Terminate(
+          "run_task was destroyed before coroutine was completed");
     }
   }
 

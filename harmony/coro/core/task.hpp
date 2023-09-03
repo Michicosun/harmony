@@ -50,9 +50,9 @@ class Task {
   }
 
   ~Task() {
-    if (coro_ && cancelled_) {
+    if (coro_ && coro_.done()) {
       coro_.destroy();
-    } else if (coro_ && coro_.done()) {
+    } else if (coro_ && cancelled_) {
       coro_.destroy();
     } else if (coro_ && !coro_.done()) {
       support::Terminate("task was destroyed before coroutine was completed");

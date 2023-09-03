@@ -18,12 +18,10 @@ class AllTask {
   }
 
   ~AllTask() {
-    if (coro_ && !coro_.done()) {
-      support::Terminate("all_task destroyed before coroutine was completed");
-    }
-
     if (coro_ && coro_.done()) {
       coro_.destroy();
+    } else if (coro_ && !coro_.done()) {
+      support::Terminate("all_task destroyed before coroutine was completed");
     }
   }
 
