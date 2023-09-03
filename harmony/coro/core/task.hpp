@@ -11,12 +11,12 @@ namespace harmony::coro {
 template <class T>
 class Task {
   struct TaskAwaiter {
-    explicit TaskAwaiter(std::coroutine_handle<TaskPromise<T>> h) noexcept
-        : coro_(h) {
+    explicit TaskAwaiter(const Task<T>* task) noexcept
+        : task_(task) {
     }
 
     bool await_ready() const noexcept {
-      return !coro_ || coro_.done();
+      return !task_->coro_ || task_->coro_.done();
     }
 
     template <concepts::BasePromiseConvertible Promise>
@@ -24,19 +24,21 @@ class Task {
       BasePromise& promise = continuation.promise();
       parameters_ = &promise.GetParameters();
 
-      // check cancel request
-      CheckCancel(parameters_);
+      if (parameters_->NeedCancel()) {
+        task_->cancelled_ = true;
+        ThrowCancel();
+      }
 
-      coro_.promise().SetContinuation(std::move(continuation));
-      return coro_;
+      task_->coro_.promise().SetContinuation(std::move(continuation));
+      return task_->coro_;
     }
 
     T await_resume() {
       CheckCancel(parameters_);
-      return coro_.promise().UnwrapResult();
+      return task_->coro_.promise().UnwrapResult();
     }
 
-    std::coroutine_handle<TaskPromise<T>> coro_;
+    const Task<T>* task_{nullptr};
     CoroParameters* parameters_{nullptr};
   };
 
@@ -48,18 +50,18 @@ class Task {
   }
 
   ~Task() {
-    if (coro_ && !coro_.done()) {
-      support::Terminate("task was destroyed before coroutine was completed");
-    }
-
-    if (coro_ && coro_.done()) {
+    if (coro_ && cancelled_) {
       coro_.destroy();
+    } else if (coro_ && coro_.done()) {
+      coro_.destroy();
+    } else if (coro_ && !coro_.done()) {
+      support::Terminate("task was destroyed before coroutine was completed");
     }
   }
 
  public:
   auto operator co_await() const& noexcept {
-    return TaskAwaiter{coro_};
+    return TaskAwaiter(this);
   }
 
   promise_type& GetPromise() {
@@ -75,6 +77,7 @@ class Task {
 
  private:
   std::coroutine_handle<promise_type> coro_;
+  mutable bool cancelled_{false};
 };
 
 }  // namespace harmony::coro

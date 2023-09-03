@@ -20,10 +20,13 @@ struct CoroParameters {
 
   void MergeFrom(const CoroParameters& other);
 
+  bool NeedCancel() const;
   void CheckCancel() const;
+
   void CheckActiveScheduler() const;
 };
 
 void CheckCancel(CoroParameters* parameters);
+void ThrowCancel();
 
 }  // namespace harmony::coro
