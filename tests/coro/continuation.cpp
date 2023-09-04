@@ -1,13 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <harmony/coro/core/task.hpp>
-#include <harmony/coro/run/detach.hpp>
-#include <harmony/coro/run/run.hpp>
-#include <harmony/coro/run/schedule.hpp>
-#include <harmony/coro/run/yield.hpp>
-#include <harmony/runtime/executors/compute/executor.hpp>
-#include <harmony/runtime/executors/manual/executor.hpp>
-#include <harmony/runtime/scheduler.hpp>
+#include <harmony/fwd.hpp>
 
 using namespace harmony;  // NOLINT
 

@@ -1,13 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <harmony/coro/combine/all.hpp>
-#include <harmony/coro/combine/first.hpp>
-#include <harmony/coro/core/task.hpp>
-#include <harmony/coro/run/run.hpp>
-#include <harmony/coro/run/schedule.hpp>
-#include <harmony/coro/run/yield.hpp>
-#include <harmony/runtime/executors/compute/executor.hpp>
-#include <harmony/runtime/scheduler.hpp>
+#include <harmony/fwd.hpp>
 
 using namespace harmony;  // NOLINT
 using namespace std::chrono_literals;
