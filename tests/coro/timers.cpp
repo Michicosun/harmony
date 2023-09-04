@@ -6,7 +6,7 @@ using namespace harmony;  // NOLINT
 using namespace std::chrono_literals;
 
 TEST(Coroutines, TimersSimple) {
-  runtime::Scheduler<executors::ComputeExecutor> scheduler(12);
+  runtime::Scheduler<executors::ComputeExecutor> scheduler(1);
   scheduler.WithTimer();
   scheduler.Start();
 
@@ -23,7 +23,7 @@ TEST(Coroutines, TimersSimple) {
 }
 
 TEST(Coroutines, TimersParallel) {
-  runtime::Scheduler<executors::ComputeExecutor> scheduler(12);
+  runtime::Scheduler<executors::ComputeExecutor> scheduler(1);
   scheduler.WithTimer();
   scheduler.Start();
 
