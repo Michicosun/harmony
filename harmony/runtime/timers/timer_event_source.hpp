@@ -8,14 +8,14 @@
 #include <thread>
 #include <unordered_set>
 
-#include <harmony/runtime/event.hpp>
 #include <harmony/runtime/timers/core/deadline.hpp>
+#include <harmony/runtime/timers/core/timer.hpp>
 #include <harmony/threads/spin_lock.hpp>
 
 namespace harmony::timers {
 
 struct TimerHandle {
-  runtime::Event* timer{nullptr};
+  TimerBase* timer{nullptr};
   Deadline deadline;
   uint64_t id;
 
@@ -37,7 +37,7 @@ class TimerEventSource {
     worker_.join();
   }
 
-  uint64_t AddTimer(runtime::Event* timer, Deadline deadline) {
+  uint64_t AddTimer(TimerBase* timer, Deadline deadline) {
     std::lock_guard guard(spin_lock_);
 
     uint64_t id = next_free_id_++;
@@ -52,7 +52,7 @@ class TimerEventSource {
     return id;
   }
 
-  uint64_t AddTimer(runtime::Event* timer, Duration timeout) {
+  uint64_t AddTimer(TimerBase* timer, Duration timeout) {
     return AddTimer(timer, DeadlineFromNow(timeout));
   }
 
@@ -97,9 +97,9 @@ class TimerEventSource {
 
   void AlarmBatch() {
     for (size_t i = 0; i < batch_size_; ++i) {
-      runtime::Event* timer_event = timers_batch_[i];
+      TimerBase* timer_event = timers_batch_[i];
 
-      if (timer_event->state_.Finish()) {
+      if (timer_event->state.Finish()) {
         timer_event->OnFinish();
       }
     }
@@ -122,7 +122,7 @@ class TimerEventSource {
   uint64_t next_free_id_{0};
 
   size_t batch_size_{0};
-  std::array<runtime::Event*, kMaxBatchSize> timers_batch_;
+  std::array<TimerBase*, kMaxBatchSize> timers_batch_;
 };
 
 };  // namespace harmony::timers
