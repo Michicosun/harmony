@@ -7,6 +7,7 @@
 #include <harmony/runtime/executors/concept.hpp>
 #include <harmony/runtime/executors/hint.hpp>
 #include <harmony/runtime/executors/task.hpp>
+#include <harmony/runtime/io/io_event_source.hpp>
 #include <harmony/runtime/timers/timer_event_source.hpp>
 
 namespace harmony::runtime {
@@ -17,6 +18,8 @@ struct IScheduler {
       executors::ExecutorHint hint = executors::ExecutorHint::Unspecified) = 0;
 
   virtual timers::TimerEventSource& GetTimerEventSource() = 0;
+
+  virtual io::IOEventSource& GetIOEventSource() = 0;
 };
 
 template <executors::Executor Executor>
@@ -32,7 +35,9 @@ class Scheduler : public IScheduler {
     executor_.Submit(task, hint);
   }
 
-  Scheduler& WithIO() {
+  template <class... Args>
+  Scheduler& WithIO(Args&&... args) {
+    io_event_source_.emplace(std::forward<Args>(args)...);
     return *this;
   }
 
@@ -52,9 +57,18 @@ class Scheduler : public IScheduler {
     return timer_event_source_.value();
   }
 
+  io::IOEventSource& GetIOEventSource() override {
+    assert(io_event_source_.has_value());
+    return io_event_source_.value();
+  }
+
  public:
   void Start() {
     executor_.Start();
+
+    if (io_event_source_.has_value()) {
+      io_event_source_->Start();
+    }
 
     if (timer_event_source_.has_value()) {
       timer_event_source_->Start();
@@ -68,6 +82,10 @@ class Scheduler : public IScheduler {
   void Stop() {
     executor_.Stop();
 
+    if (io_event_source_.has_value()) {
+      io_event_source_->Stop();
+    }
+
     if (timer_event_source_.has_value()) {
       timer_event_source_->Stop();
     }
@@ -75,7 +93,7 @@ class Scheduler : public IScheduler {
 
  private:
   Executor executor_;
-  // io source
+  std::optional<io::IOEventSource> io_event_source_;
   std::optional<timers::TimerEventSource> timer_event_source_;
 };
 
