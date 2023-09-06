@@ -25,4 +25,5 @@
 #include <harmony/runtime/scheduler.hpp>
 
 // events
+#include <harmony/coro/events/fd_ready.hpp>
 #include <harmony/coro/events/sleep_for.hpp>
