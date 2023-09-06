@@ -10,6 +10,7 @@ namespace harmony::io {
 
 struct IORequest : public runtime::Event {
   Fd fd;
+  io::Operation operation;
   EventStatus status;
 };
 

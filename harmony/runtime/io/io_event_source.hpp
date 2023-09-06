@@ -19,9 +19,10 @@ struct IORequestHandle {
   IORequest* request;
   epoll_event ev;
 
-  IORequestHandle(IORequest* request, Operation op, uint64_t id)
+  IORequestHandle(IORequest* request, uint64_t id)
       : request{request} {
-    ev.events = OperationToEvent(op) | EPOLLONESHOT | EPOLLRDHUP;
+    ev.events =
+        OperationToEvent(request->operation) | EPOLLONESHOT | EPOLLRDHUP;
     ev.data.u64 = id;
   }
 };
@@ -43,11 +44,11 @@ class IOEventSource {
     worker_.join();
   }
 
-  uint64_t AddIORequest(IORequest* request, Operation op) {
+  uint64_t AddIORequest(IORequest* request) {
     std::lock_guard guard(spin_lock_);
 
     uint64_t id = next_free_id_++;
-    auto it = requests_.insert({id, IORequestHandle(request, op, id)});
+    auto it = requests_.insert({id, IORequestHandle(request, id)});
 
     auto& io_handle = it.first->second;
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, request->fd, &io_handle.ev) == -1) {
