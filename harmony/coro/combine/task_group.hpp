@@ -2,7 +2,7 @@
 
 #include <harmony/coro/combine/impl/task_group/add_task_awaiter.hpp>
 #include <harmony/coro/combine/impl/task_group/group_awaiter.hpp>
-#include <harmony/coro/concepts/awaitable.hpp>
+#include <harmony/coro/core/task.hpp>
 
 namespace harmony::coro {
 
@@ -21,5 +21,14 @@ class TaskGroup {
  private:
   impl::GroupSharedState* shared_state_{nullptr};
 };
+
+template <concepts::Awaitable... Awaitables>
+coro::Task<TaskGroup> WithTaskGroup(Awaitables&&... awaitables) {
+  TaskGroup tg;
+
+  (co_await tg.Start(std::forward<Awaitables>(awaitables)), ...);
+
+  co_return tg;
+}
 
 }  // namespace harmony::coro
