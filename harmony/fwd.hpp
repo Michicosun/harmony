@@ -7,6 +7,7 @@
 // parallel combinators
 #include <harmony/coro/combine/all.hpp>
 #include <harmony/coro/combine/first.hpp>
+#include <harmony/coro/combine/task_group.hpp>
 
 // run functions
 #include <harmony/coro/run/detach.hpp>

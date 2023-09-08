@@ -147,3 +147,49 @@ TEST(Coroutines, FirstException) {
   scheduler.WaitIdle();
   scheduler.Stop();
 }
+
+TEST(Coroutines, TaskGroupSimple) {
+  runtime::Scheduler<executors::ComputeExecutor> scheduler(12);
+  scheduler.Start();
+
+  struct Result {
+    std::chrono::milliseconds ellapsed;
+    size_t done;
+  };
+
+  auto amain = [&]() -> coro::Task<Result> {
+    co_await coro::Schedule(scheduler);
+
+    auto start_t = std::chrono::steady_clock::now();
+    std::atomic<size_t> done;
+
+    auto sleeper = [&]() -> coro::Task<std::monostate> {
+      co_await coro::Yield();
+      std::this_thread::sleep_for(50ms);
+      done.fetch_add(1);
+      co_return std::monostate{};
+    };
+
+    coro::TaskGroup tg;
+    for (size_t i = 0; i < 10; ++i) {
+      co_await tg.Start(sleeper());
+    }
+
+    co_await tg.Wait();
+
+    auto d1 = std::chrono::steady_clock::now() - start_t;
+    auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(d1);
+
+    co_return Result{
+        .ellapsed = d2,
+        .done = done.load(),
+    };
+  };
+
+  auto result = coro::Run(amain());
+  ASSERT_LE(result.ellapsed, 60ms);
+  ASSERT_EQ(result.done, 10);
+
+  scheduler.WaitIdle();
+  scheduler.Stop();
+}
