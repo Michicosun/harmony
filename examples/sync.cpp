@@ -37,7 +37,6 @@ int main() {
 
   std::cout << "DONE: " << coro::Run(amain(100)) << std::endl;
 
-  scheduler.WaitIdle();
   scheduler.Stop();
   return 0;
 }

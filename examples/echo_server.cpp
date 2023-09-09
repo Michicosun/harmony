@@ -48,7 +48,6 @@ int main() {
 
   coro::Run(amain());
 
-  scheduler.WaitIdle();
   scheduler.Stop();
   return 0;
 }
