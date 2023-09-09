@@ -64,13 +64,12 @@ class TimerEventSource {
  private:
   void WorkerRoutine() {
     while (!stopped_.load()) {
-      GrabTimersBatch();
-      AlarmBatch();
+      ProcessTimers();
       SuspendWorker();
     }
   }
 
-  void GrabTimersBatch() {
+  void ProcessTimers() {
     std::lock_guard guard(spin_lock_);
 
     auto now = Clock::now();
@@ -93,9 +92,7 @@ class TimerEventSource {
 
       timers_.pop();
     }
-  }
 
-  void AlarmBatch() {
     for (size_t i = 0; i < batch_size_; ++i) {
       TimerBase* timer_event = timers_batch_[i];
 
