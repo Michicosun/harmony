@@ -23,7 +23,15 @@ coro::Task<AcceptInfo> Acceptor::Accept() {
   struct sockaddr_in client_addr;
   socklen_t client_addr_len = sizeof(client_addr);
 
-  co_await coro::FdReady(lfd_, io::Operation::Read);
+  auto status = co_await coro::FdReady(lfd_, io::Operation::Read);
+
+  if (status == io::EventStatus::Error) {
+    throw NetError("error while polling descriptor");
+  }
+
+  if (status == io::EventStatus::Closed) {
+    throw NetError("descriptor is closed");
+  }
 
   int client_fd =
       accept(lfd_, (struct sockaddr*)&client_addr, &client_addr_len);
