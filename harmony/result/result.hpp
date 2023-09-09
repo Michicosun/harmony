@@ -7,7 +7,7 @@
 
 #include <harmony/support/terminate/terminate.hpp>
 
-namespace harmony::support {
+namespace harmony::result {
 
 class MyException {};
 
@@ -64,4 +64,4 @@ class Result {
   std::exception_ptr e_ptr_{nullptr};
 };
 
-}  // namespace harmony::support
+}  // namespace harmony::result

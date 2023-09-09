@@ -2,8 +2,8 @@
 
 #include <harmony/coro/combine/impl/first/first_shared_state_base.hpp>
 #include <harmony/coro/concepts/awaitable.hpp>
+#include <harmony/result/result.hpp>
 #include <harmony/runtime/scheduler.hpp>
-#include <harmony/support/result/result.hpp>
 
 namespace harmony::coro::impl {
 

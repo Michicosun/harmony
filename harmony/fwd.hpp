@@ -3,6 +3,7 @@
 // core concepts
 #include <harmony/coro/core/task.hpp>
 #include <harmony/coro/core/task_parameters.hpp>
+#include <harmony/result/unit.hpp>
 
 // parallel combinators
 #include <harmony/coro/combine/all.hpp>
@@ -28,3 +29,7 @@
 // events
 #include <harmony/coro/events/fd_ready.hpp>
 #include <harmony/coro/events/sleep_for.hpp>
+
+// network
+#include <harmony/net/acceptor.hpp>
+#include <harmony/net/socket.hpp>

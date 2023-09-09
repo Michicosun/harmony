@@ -3,7 +3,7 @@
 #include <coroutine>
 
 #include <harmony/coro/core/base_promise.hpp>
-#include <harmony/support/result/result.hpp>
+#include <harmony/result/result.hpp>
 #include <harmony/threads/event/event.hpp>
 
 namespace harmony::coro::impl {
@@ -63,7 +63,7 @@ class RunTaskPromise : public BasePromise {
 
  private:
   threads::MPSCEvent* event_{nullptr};
-  support::Result<T> result_;
+  result::Result<T> result_;
 };
 
 }  // namespace harmony::coro::impl

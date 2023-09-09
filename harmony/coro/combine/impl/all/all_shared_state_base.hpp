@@ -7,8 +7,8 @@
 
 #include <harmony/coro/combine/impl/rendezvous.hpp>
 #include <harmony/coro/concepts/awaitable.hpp>
+#include <harmony/result/result.hpp>
 #include <harmony/support/ref_counter/ref_counter.hpp>
-#include <harmony/support/result/result.hpp>
 
 namespace harmony::coro::impl {
 

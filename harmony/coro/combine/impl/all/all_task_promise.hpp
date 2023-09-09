@@ -2,7 +2,7 @@
 
 #include <harmony/coro/combine/impl/all/all_shared_state_base.hpp>
 #include <harmony/coro/core/base_promise.hpp>
-#include <harmony/support/result/result.hpp>
+#include <harmony/result/result.hpp>
 
 namespace harmony::coro::impl {
 
@@ -67,7 +67,7 @@ class AllTaskPromise : public BasePromise {
 
  private:
   AllSharedStateBase* shared_state_{nullptr};
-  support::Result<T> result_;
+  result::Result<T> result_;
 };
 
 }  // namespace harmony::coro::impl

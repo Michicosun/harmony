@@ -1,8 +1,8 @@
 #pragma once
 
 #include <harmony/coro/core/base_promise.hpp>
+#include <harmony/result/result.hpp>
 #include <harmony/runtime/scheduler.hpp>
-#include <harmony/support/result/result.hpp>
 
 namespace harmony::coro {
 
@@ -33,6 +33,10 @@ class TaskPromise : public BasePromise {
 
   std::suspend_always initial_suspend() noexcept {
     return {};
+  }
+
+  void return_value(T arg) {
+    result_.SetValue(std::move(arg));
   }
 
   void return_value(auto arg) {
@@ -67,7 +71,7 @@ class TaskPromise : public BasePromise {
  private:
   friend class Task<T>;
 
-  support::Result<T> result_;
+  result::Result<T> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
 };
 

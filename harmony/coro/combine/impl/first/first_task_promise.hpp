@@ -2,7 +2,7 @@
 
 #include <harmony/coro/combine/impl/first/first_shared_state.hpp>
 #include <harmony/coro/core/base_promise.hpp>
-#include <harmony/support/result/result.hpp>
+#include <harmony/result/result.hpp>
 
 namespace harmony::coro::impl {
 
@@ -65,7 +65,7 @@ class FirstTaskPromise : public BasePromise {
 
  private:
   FirstSharedStateBase<T>* shared_state_{nullptr};
-  support::Result<T> result_;
+  result::Result<T> result_;
 };
 
 }  // namespace harmony::coro::impl

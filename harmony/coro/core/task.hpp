@@ -4,11 +4,12 @@
 #include <utility>
 
 #include <harmony/coro/core/task_promise.hpp>
+#include <harmony/result/unit.hpp>
 #include <harmony/support/terminate/terminate.hpp>
 
 namespace harmony::coro {
 
-template <class T>
+template <class T = result::Unit>
 class Task {
   struct [[nodiscard]] TaskAwaiter {
     explicit TaskAwaiter(const Task<T>* task) noexcept
