@@ -5,7 +5,7 @@
 #include <harmony/runtime/scheduler.hpp>
 #include <harmony/runtime/timers/core/deadline.hpp>
 #include <harmony/runtime/timers/core/timer.hpp>
-#include <harmony/support/event/event.hpp>
+#include <harmony/threads/event/event.hpp>
 
 namespace harmony::coro::impl {
 
@@ -72,7 +72,7 @@ class [[nodiscard]] TimerAwaiter : public executors::TaskBase,
   std::coroutine_handle<> coroutine_{nullptr};
   CoroParameters* parameters_{nullptr};
 
-  support::MPSCEvent cb_constructed_;
+  threads::MPSCEvent cb_constructed_;
   std::optional<std::stop_callback<TimerStopHandler>> stop_callback_;
 };
 

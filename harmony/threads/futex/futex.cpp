@@ -1,8 +1,8 @@
-#include <unistd.h>
-#include <sys/syscall.h>
 #include <linux/futex.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
-#include <harmony/threads/futex.hpp>
+#include <harmony/threads/futex/futex.hpp>
 
 namespace harmony::threads::futex {
 

@@ -6,7 +6,7 @@ namespace harmony::coro {
 
 template <concepts::Awaitable Awaitable>
 inline auto Run(Awaitable&& object) {
-  support::MPSCEvent event;
+  threads::MPSCEvent event;
 
   auto task = impl::CreateRunTask(std::forward<Awaitable>(object));
   task.Start(event);

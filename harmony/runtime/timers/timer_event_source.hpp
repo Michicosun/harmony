@@ -10,7 +10,7 @@
 
 #include <harmony/runtime/timers/core/deadline.hpp>
 #include <harmony/runtime/timers/core/timer.hpp>
-#include <harmony/threads/spin_lock.hpp>
+#include <harmony/threads/spin_lock/spin_lock.hpp>
 
 namespace harmony::timers {
 

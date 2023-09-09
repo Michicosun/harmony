@@ -1,8 +1,7 @@
-#include <harmony/threads/futex.hpp>
+#include <harmony/threads/event/event.hpp>
+#include <harmony/threads/futex/futex.hpp>
 
-#include <harmony/support/event/event.hpp>
-
-namespace harmony::support {
+namespace harmony::threads {
 
 void MPSCEvent::Wait() {
   threads::futex::Wait(completed_, States::Empty);
@@ -19,4 +18,4 @@ void MPSCEvent::Reset() {
   completed_.store(States::Empty);
 }
 
-}  // namespace harmony::support
+}  // namespace harmony::threads

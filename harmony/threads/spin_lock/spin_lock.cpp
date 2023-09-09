@@ -1,6 +1,6 @@
 #include <thread>
 
-#include <harmony/threads/spin_lock.hpp>
+#include <harmony/threads/spin_lock/spin_lock.hpp>
 
 namespace harmony::threads {
 

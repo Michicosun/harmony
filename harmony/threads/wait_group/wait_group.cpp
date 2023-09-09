@@ -1,9 +1,7 @@
-#include <cstddef>
+#include <harmony/threads/futex/futex.hpp>
+#include <harmony/threads/wait_group/wait_group.hpp>
 
-#include <harmony/support/wait_group/wait_group.hpp>
-#include <harmony/threads/futex.hpp>
-
-namespace harmony::support {
+namespace harmony::threads {
 
 void WaitGroup::Add(size_t count) {
   size_.fetch_add(count);
@@ -27,4 +25,4 @@ void WaitGroup::Wait() {
   }
 }
 
-}  // namespace harmony::support
+}  // namespace harmony::threads

@@ -3,8 +3,8 @@
 #include <coroutine>
 
 #include <harmony/coro/core/base_promise.hpp>
-#include <harmony/support/event/event.hpp>
 #include <harmony/support/result/result.hpp>
+#include <harmony/threads/event/event.hpp>
 
 namespace harmony::coro::impl {
 
@@ -52,7 +52,7 @@ class RunTaskPromise : public BasePromise {
   }
 
  public:
-  void Start(support::MPSCEvent& event) {
+  void Start(threads::MPSCEvent& event) {
     event_ = &event;
     handle::from_promise(*this).resume();
   }
@@ -62,7 +62,7 @@ class RunTaskPromise : public BasePromise {
   }
 
  private:
-  support::MPSCEvent* event_{nullptr};
+  threads::MPSCEvent* event_{nullptr};
   support::Result<T> result_;
 };
 

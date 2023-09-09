@@ -1,8 +1,9 @@
 #pragma once
 
 #include <atomic>
+#include <cstddef>
 
-namespace harmony::support {
+namespace harmony::threads {
 
 class WaitGroup {
  public:
@@ -15,4 +16,4 @@ class WaitGroup {
   std::atomic<uint32_t> size_{0};
 };
 
-}  // namespace harmony::support
+}  // namespace harmony::threads

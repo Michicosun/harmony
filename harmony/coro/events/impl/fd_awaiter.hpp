@@ -5,7 +5,7 @@
 #include <harmony/runtime/io/core/epoll_events.hpp>
 #include <harmony/runtime/io/core/io_request.hpp>
 #include <harmony/runtime/scheduler.hpp>
-#include <harmony/support/event/event.hpp>
+#include <harmony/threads/event/event.hpp>
 
 namespace harmony::coro::impl {
 
@@ -69,7 +69,7 @@ class [[nodiscard]] FdAwaiter : public executors::TaskBase,
   std::coroutine_handle<> coroutine_{nullptr};
   CoroParameters* parameters_{nullptr};
 
-  support::MPSCEvent cb_constructed_;
+  threads::MPSCEvent cb_constructed_;
   std::optional<std::stop_callback<FdStopHandler>> stop_callback_;
 };
 

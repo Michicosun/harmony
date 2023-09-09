@@ -11,7 +11,7 @@
 #include <harmony/runtime/io/core/epoll_events.hpp>
 #include <harmony/runtime/io/core/fd.hpp>
 #include <harmony/runtime/io/core/io_request.hpp>
-#include <harmony/threads/spin_lock.hpp>
+#include <harmony/threads/spin_lock/spin_lock.hpp>
 
 namespace harmony::io {
 

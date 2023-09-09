@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-namespace harmony::support {
+namespace harmony::threads {
 
 class MPSCEvent {
   enum States : uint64_t {
@@ -22,4 +22,4 @@ class MPSCEvent {
   std::atomic<uint32_t> completed_{States::Empty};
 };
 
-}  // namespace harmony::support
+}  // namespace harmony::threads
