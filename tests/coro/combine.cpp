@@ -163,11 +163,11 @@ TEST(Coroutines, TaskGroupSimple) {
     auto start_t = std::chrono::steady_clock::now();
     std::atomic<size_t> done;
 
-    auto sleeper = [&]() -> coro::Task<std::monostate> {
+    auto sleeper = [&]() -> coro::Task<> {
       co_await coro::Yield();
       std::this_thread::sleep_for(50ms);
       done.fetch_add(1);
-      co_return std::monostate{};
+      co_return {};
     };
 
     coro::TaskGroup tg;

@@ -15,14 +15,14 @@ TEST(Coroutines, Event) {
     bool done = false;
     coro::OneShotEvent event;
 
-    auto coroutine = [&]() -> coro::Task<std::monostate> {
+    auto coroutine = [&]() -> coro::Task<> {
       co_await coro::Schedule(scheduler);
 
       std::this_thread::sleep_for(500ms);
       done = true;
       event.Complete();
 
-      co_return std::monostate{};
+      co_return {};
     };
 
     coro::Detach(coroutine());
@@ -51,7 +51,7 @@ TEST(Coroutines, Mutex) {
     coro::WaitGroup wg;
     wg.Add(coro_count);
 
-    auto contender = [&]() -> coro::Task<std::monostate> {
+    auto contender = [&]() -> coro::Task<> {
       co_await coro::Schedule(scheduler);
 
       for (size_t j = 0; j < 100'000; ++j) {
@@ -61,7 +61,7 @@ TEST(Coroutines, Mutex) {
 
       wg.Done();
 
-      co_return std::monostate{};
+      co_return {};
     };
 
     for (size_t i = 0; i < coro_count; ++i) {

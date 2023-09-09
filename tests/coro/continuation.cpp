@@ -4,9 +4,9 @@
 
 using namespace harmony;  // NOLINT
 
-coro::Task<std::monostate> boo() {
+coro::Task<> boo() {
   co_await coro::Yield();
-  co_return std::monostate{};
+  co_return {};
 }
 
 coro::Task<size_t> foo(size_t x) {

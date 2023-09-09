@@ -8,9 +8,9 @@ using namespace std::chrono_literals;
 TEST(Coroutines, Simple) {
   auto done = false;
 
-  auto coroutine = [&]() -> coro::Task<std::monostate> {
+  auto coroutine = [&]() -> coro::Task<> {
     done = true;
-    co_return std::monostate{};
+    co_return {};
   };
 
   auto task = coroutine();
@@ -55,10 +55,10 @@ TEST(Coroutines, Schedule) {
 
   bool done = false;
 
-  auto coroutine = [&]() -> coro::Task<std::monostate> {
+  auto coroutine = [&]() -> coro::Task<> {
     co_await coro::Schedule(scheduler);
     done = true;
-    co_return std::monostate{};
+    co_return {};
   };
 
   coro::Detach(coroutine());
@@ -75,7 +75,7 @@ TEST(Coroutines, Yield) {
 
   bool done = false;
 
-  auto coroutine = [&]() -> coro::Task<std::monostate> {
+  auto coroutine = [&]() -> coro::Task<> {
     co_await coro::Schedule(scheduler);
 
     for (size_t i = 0; i < 10; ++i) {
@@ -84,7 +84,7 @@ TEST(Coroutines, Yield) {
 
     done = true;
 
-    co_return std::monostate{};
+    co_return {};
   };
 
   coro::Detach(coroutine());
