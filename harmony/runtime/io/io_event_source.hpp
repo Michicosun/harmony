@@ -92,6 +92,7 @@ class IOEventSource {
 
       IORequest* request = it->second.request;
 
+      requests_.erase(it);
       if (request->fd != -1) {
         epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, request->fd, nullptr);
       }
