@@ -1,12 +1,14 @@
+# Harmony
+
 Minimalistic concurrency library built on top of С++20 coroutines
 
 ---
 
-# Building
+## Building
 
 This project requires building only for linux platform.
 
-## Building from source
+### Building from source
 
 Clone repository with all submodules, there is only one: gtest, that is necessary for tests
 
@@ -22,7 +24,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j 12
 ```
 
-### CMake Options
+#### CMake Options
 
 | Option | Description |
 |---------- |------|
@@ -30,7 +32,7 @@ make -j 12
 | BUILD_EXAMPLES | builds examples |
 | BUILD_PLAYGROUND | builds playground |
 
-## Linking via CMake FetchContent
+### Linking via CMake FetchContent
 
 Project library target is harmony
 
@@ -44,9 +46,9 @@ FetchContent_MakeAvailable(harmony)
 target_link_libraries(TARGET harmony)
 ```
 
-# Synchronization primitives
+## Synchronization primitives
 
-## Mutex
+### Mutex
 
 Base asynchronous mutex for coroutine runtime, usage:
 
@@ -59,14 +61,14 @@ for (size_t j = 0; j < 100; ++j) {
 
 returns a class similar to std::unique_lock with unlock in destructor
 
-## OneShotEvent
+### OneShotEvent
 
 This is Single Consumer Multi Producer event for coroutine runtime, usage:
 
 ```cpp
 auto coroutine = [&]() -> coro::Task<> {
     co_await coro::Schedule(scheduler);
-    event.Complete(); // completes event and wake ups waiters
+    event.Complete(); // completes event and wakes up waiters
     co_return {};
 };
 
@@ -74,7 +76,7 @@ coro::Detach(coroutine());
 co_await event.Wait(); // waits for event asynchronously
 ```
 
-## WaitGroup
+### WaitGroup
 
 Class with similar semantics as Golang WaitGroup, usage:
 
@@ -95,13 +97,13 @@ for (size_t i = 0; i < coro_count; ++i) {
 co_await wg.Wait(); // waits until balance is dropped to 0
 ```
 
-# Сombinators
+## Сombinators
 
 Сombinators are main blocks for cancellation, we are using structures concurrency to prevent leaks and nondeterministic execution, to achieve that every combinator must contain stop_source and all sources will be linked in dynamic runtime tree of awaiters.
 
 If some coroutine trigger stop, it will eventually stop all subtrees of this coroutine runtime tree node.
 
-## All
+### All
 
 All - combinator that runs in parallel a bunch of coroutines and awaits all of them or throws first occurred error, example of usage:
 
@@ -121,7 +123,7 @@ auto task2 = []() -> coro::Task<std::string> {
 auto result = co_await coro::All(task1(), task2()); // will return tuple
 ```
 
-## First
+### First
 
 First - combinator that returns first completed coroutine result of throws the last occurred error, usage is similar to All combinator.
 
@@ -143,21 +145,21 @@ auto result = co_await coro::First(long_running_query(), timeout());
 
 In this example, a long-running query will be cancelled after first returns.
 
-## TaskGroup
+### TaskGroup
 
 TaskGroup contains a bunch of running coroutines and can be dynamically added a new one, but you can wait for the completion of all coroutines only 1 time, example:
 
 ```cpp
 coro::TaskGroup tg;
 
-while (true) {
+for (size_t j = 0; j < 100; ++j) {
     co_await tg.Start(coroutine());
 }
 
 co_await tg.Wait();
 ```
 
-# Runtime
+## Runtime
 
 Harmony runtime consists of one scheduler that contains timer event source, io event source and main executor. You can configure many schedulers in the program with different settings and event sources as well, example:
 
