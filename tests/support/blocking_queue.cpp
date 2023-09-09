@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <harmony/support/queues/blocking_queue.hpp>
-#include <harmony/support/wait_group/wait_group.hpp>
+#include <harmony/threads/wait_group/wait_group.hpp>
 
 class TestNode : public harmony::support::ForwardListNode<TestNode> {
  public:

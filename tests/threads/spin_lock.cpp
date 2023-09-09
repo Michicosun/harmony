@@ -4,12 +4,12 @@
 
 #include <gtest/gtest.h>
 
-#include <harmony/support/event/event.hpp>
-#include <harmony/threads/spin_lock.hpp>
+#include <harmony/threads/event/event.hpp>
+#include <harmony/threads/spin_lock/spin_lock.hpp>
 
 TEST(SpinLockTest, Simple) {
   harmony::threads::SpinLock lock;
-  harmony::support::MPSCEvent event;
+  harmony::threads::MPSCEvent event;
   std::vector<std::thread> threads;
 
   const size_t spin_count = 10'000;

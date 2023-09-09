@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 
-#include <harmony/threads/futex.hpp>
+#include <harmony/threads/futex/futex.hpp>
 
 TEST(FutexTest, Simple) {
   std::atomic<uint32_t> futex_cell = 0;

@@ -2,11 +2,11 @@
 
 #include <gtest/gtest.h>
 
-#include <harmony/support/event/event.hpp>
+#include <harmony/threads/event/event.hpp>
 
 TEST(EventTest, Simple) {
-  harmony::support::MPSCEvent event_1;
-  harmony::support::MPSCEvent event_2;
+  harmony::threads::MPSCEvent event_1;
+  harmony::threads::MPSCEvent event_2;
   std::atomic<size_t> count = 0;
 
   auto thread_1 = std::thread([&]() {
