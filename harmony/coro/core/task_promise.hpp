@@ -1,8 +1,8 @@
 #pragma once
 
 #include <harmony/coro/core/base_promise.hpp>
-#include <harmony/result/result.hpp>
 #include <harmony/runtime/scheduler.hpp>
+#include <harmony/support/result/result.hpp>
 
 namespace harmony::coro {
 
@@ -67,7 +67,7 @@ class TaskPromise : public BasePromise {
  private:
   friend class Task<T>;
 
-  result::Result<T> result_;
+  support::Result<T> result_;
   std::coroutine_handle<> continuation_ = std::noop_coroutine();
 };
 

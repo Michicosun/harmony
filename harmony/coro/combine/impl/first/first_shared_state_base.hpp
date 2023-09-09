@@ -4,8 +4,8 @@
 
 #include <harmony/coro/combine/impl/rendezvous.hpp>
 #include <harmony/coro/concepts/awaitable.hpp>
-#include <harmony/result/result.hpp>
 #include <harmony/support/ref_counter/ref_counter.hpp>
+#include <harmony/support/result/result.hpp>
 
 namespace harmony::coro::impl {
 
@@ -83,7 +83,7 @@ class FirstSharedStateBase : public support::RefCounter {
 
   // state
   std::coroutine_handle<> waiter_{nullptr};
-  result::Result<T> result_;
+  support::Result<T> result_;
 
   // cancellation
   std::stop_source stop_source_;
