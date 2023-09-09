@@ -11,16 +11,16 @@ bool Intersects(uint32_t event_set, uint32_t events) {
 }  // namespace
 
 EventStatus EventToStatus(uint32_t event_set) {
-  if (Intersects(event_set, EPOLLIN | EPOLLOUT)) {
-    return EventStatus::Ready;
+  if (Intersects(event_set, EPOLLPRI | EPOLLERR)) {
+    return EventStatus::Error;
   }
 
   if (Intersects(event_set, EPOLLRDHUP | EPOLLHUP)) {
     return EventStatus::Closed;
   }
 
-  if (Intersects(event_set, EPOLLPRI | EPOLLERR)) {
-    return EventStatus::Error;
+  if (Intersects(event_set, EPOLLIN | EPOLLOUT)) {
+    return EventStatus::Ready;
   }
 
   throw EpollError("unexpected epoll event status");
