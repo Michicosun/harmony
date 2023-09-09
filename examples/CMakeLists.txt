@@ -11,3 +11,4 @@ endfunction()
 Log("Configuring examples")
 
 MakeExample(sync)
+MakeExample(echo_server)

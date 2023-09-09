@@ -1,5 +1,4 @@
 #include <iostream>
-#include <variant>
 
 #include <harmony/fwd.hpp>
 
@@ -17,7 +16,7 @@ int main() {
     coro::Mutex mutex;
     size_t counter = 0;
 
-    auto runner = [&]() -> coro::Task<std::monostate> {
+    auto runner = [&]() -> coro::Task<> {
       co_await coro::Yield();
 
       for (size_t j = 0; j < 100000; ++j) {
@@ -25,7 +24,7 @@ int main() {
         counter += 1;
       }
 
-      co_return std::monostate{};
+      co_return {};
     };
 
     for (size_t i = 0; i < coro_count; ++i) {
