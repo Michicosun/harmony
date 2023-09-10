@@ -1,30 +1,26 @@
 #pragma once
 
-#include <array>
 #include <atomic>
 #include <cstddef>
-#include <mutex>
 #include <queue>
 #include <thread>
-#include <unordered_set>
 
 #include <harmony/runtime/timers/core/deadline.hpp>
 #include <harmony/runtime/timers/core/timer.hpp>
+#include <harmony/support/queues/batch_lock_free_queue.hpp>
 #include <harmony/threads/spin_lock/spin_lock.hpp>
 
 namespace harmony::timers {
 
-struct TimerHandle {
-  TimerBase* timer{nullptr};
-  Deadline deadline;
-  uint64_t id;
-
-  bool operator<(const TimerHandle& th) const {
-    return deadline > th.deadline;
-  }
-};
-
 class TimerEventSource {
+  struct TimerHandle {
+    TimerBase* timer{nullptr};
+
+    bool operator<(const TimerHandle& th) const {
+      return timer->deadline > th.timer->deadline;
+    }
+  };
+
  public:
   void Start() {
     worker_ = std::thread([this]() {
@@ -37,68 +33,66 @@ class TimerEventSource {
     worker_.join();
   }
 
-  uint64_t AddTimer(TimerBase* timer, Deadline deadline) {
-    std::lock_guard guard(spin_lock_);
-
-    uint64_t id = next_free_id_++;
-    running_.insert(id);
-
-    timers_.push(TimerHandle{
-        .timer = timer,
-        .deadline = deadline,
-        .id = id,
-    });
-
-    return id;
+  void AddTimer(TimerBase* timer, Deadline deadline) {
+    timer->id = next_free_id_.fetch_add(1);
+    timer->deadline = deadline;
+    new_timers_.Push(timer);
   }
 
-  uint64_t AddTimer(TimerBase* timer, Duration timeout) {
-    return AddTimer(timer, DeadlineFromNow(timeout));
+  void AddTimer(TimerBase* timer, Duration timeout) {
+    AddTimer(timer, DeadlineFromNow(timeout));
   }
 
-  void DeleteTimer(uint64_t id) {
-    std::lock_guard guard(spin_lock_);
-    running_.erase(id);
+  void DeleteTimer(TimerBase* timer) {
+    timers_to_cancel_.Push(timer);
   }
 
  private:
   void WorkerRoutine() {
     while (!stopped_.load()) {
+      AddNewTimers();
+      DeleteCancelledTimers();
       ProcessTimers();
       SuspendWorker();
     }
   }
 
+  void AddNewTimers() {
+    TimerBase* timer = new_timers_.ExtractAll();
+
+    while (timer != nullptr) {
+      timers_.push({timer});
+      timer = Unwrap(timer->next);
+    }
+  }
+
+  void DeleteCancelledTimers() {
+    TimerBase* timer = timers_to_cancel_.ExtractAll();
+
+    while (timer != nullptr) {
+      timer->OnFinish();
+      timer = Unwrap(timer->next);
+    }
+  }
+
   void ProcessTimers() {
-    std::lock_guard guard(spin_lock_);
-
     auto now = Clock::now();
-    batch_size_ = 0;
+    size_t processed = 0;
 
-    while (!timers_.empty() && batch_size_ < kMaxBatchSize) {
+    while (!timers_.empty() && processed < kMaxBatchSize) {
       const auto& timer_handle = timers_.top();
+      TimerBase* timer = timer_handle.timer;
 
-      if (timer_handle.deadline > now) {
+      if (timer->deadline > now) {
         break;
       }
 
-      uint64_t timer_id = timer_handle.id;
-      auto it = running_.find(timer_id);
-
-      if (it != running_.end()) {
-        timers_batch_[batch_size_++] = timer_handle.timer;
-        running_.erase(it);
+      if (timer->state.Finish()) {
+        timer->OnFinish();
+        ++processed;
       }
 
       timers_.pop();
-    }
-
-    for (size_t i = 0; i < batch_size_; ++i) {
-      TimerBase* timer_event = timers_batch_[i];
-
-      if (timer_event->state.Finish()) {
-        timer_event->OnFinish();
-      }
     }
   }
 
@@ -113,13 +107,11 @@ class TimerEventSource {
   std::thread worker_;
   std::atomic<bool> stopped_{false};
 
-  threads::SpinLock spin_lock_;
-  std::priority_queue<TimerHandle> timers_;
-  std::unordered_set<uint64_t> running_;
-  uint64_t next_free_id_{0};
+  support::BatchLockFreeQueue<TimerBase> new_timers_;
+  support::BatchLockFreeQueue<TimerBase> timers_to_cancel_;
 
-  size_t batch_size_{0};
-  std::array<TimerBase*, kMaxBatchSize> timers_batch_;
+  std::priority_queue<TimerHandle> timers_;
+  std::atomic<uint64_t> next_free_id_{0};
 };
 
 };  // namespace harmony::timers

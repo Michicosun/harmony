@@ -13,18 +13,15 @@ class [[nodiscard]] TimerAwaiter : public executors::TaskBase,
                                    public timers::TimerBase {
   struct TimerStopHandler {
     TimerAwaiter* timer{nullptr};
-    uint64_t timer_id{0};
 
-    TimerStopHandler(TimerAwaiter* timer, uint64_t timer_id)
-        : timer{timer},
-          timer_id{timer_id} {
+    explicit TimerStopHandler(TimerAwaiter* timer)
+        : timer{timer} {
     }
 
     void operator()() {
       if (timer->state.Cancel()) {
         auto& ts = timer->parameters_->scheduler->GetTimerEventSource();
-        ts.DeleteTimer(timer_id);
-        timer->Schedule();
+        ts.DeleteTimer(timer);
       }
     }
   };
@@ -50,11 +47,10 @@ class [[nodiscard]] TimerAwaiter : public executors::TaskBase,
 
     // setup timer and stop callback
     auto& ts = parameters_->scheduler->GetTimerEventSource();
-    uint64_t timer_id = ts.AddTimer(this, duration_);
+    ts.AddTimer(this, duration_);
 
-    stop_callback_.emplace(parameters_->stop_token,
-                           TimerStopHandler(this, timer_id));
-    cb_constructed_.Complete();
+    stop_callback_.emplace(parameters_->stop_token, TimerStopHandler(this));
+    cb_constructed_.store(true);
   }
 
   void await_resume();
@@ -72,7 +68,7 @@ class [[nodiscard]] TimerAwaiter : public executors::TaskBase,
   std::coroutine_handle<> coroutine_{nullptr};
   CoroParameters* parameters_{nullptr};
 
-  threads::MPSCEvent cb_constructed_;
+  std::atomic<bool> cb_constructed_{false};
   std::optional<std::stop_callback<TimerStopHandler>> stop_callback_;
 };
 

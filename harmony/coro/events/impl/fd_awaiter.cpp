@@ -27,7 +27,6 @@ void FdAwaiter::Run() noexcept {
 
 void FdAwaiter::OnFinish() {
   while (!cb_constructed_.load()) {
-    std::this_thread::yield();
   }
 
   stop_callback_.reset();

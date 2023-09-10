@@ -23,7 +23,9 @@ void TimerAwaiter::Run() noexcept {
 }
 
 void TimerAwaiter::OnFinish() {
-  cb_constructed_.Wait();
+  while (!cb_constructed_.load()) {
+  }
+
   stop_callback_.reset();
   Schedule();
 }

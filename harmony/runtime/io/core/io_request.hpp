@@ -9,8 +9,8 @@
 
 namespace harmony::io {
 
-struct IORequest : public runtime::Event,
-                   public support::ForwardListNode<IORequest> {
+struct IORequest : runtime::Event,
+                   support::ForwardListNode<IORequest> {
   Fd fd;
   io::Operation operation;
 
