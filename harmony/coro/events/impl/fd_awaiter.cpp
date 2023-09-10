@@ -1,4 +1,5 @@
 #include <harmony/coro/events/impl/fd_awaiter.hpp>
+#include <thread>
 
 namespace harmony::coro::impl {
 
@@ -25,7 +26,10 @@ void FdAwaiter::Run() noexcept {
 }
 
 void FdAwaiter::OnFinish() {
-  cb_constructed_.Wait();
+  while (!cb_constructed_.load()) {
+    std::this_thread::yield();
+  }
+
   stop_callback_.reset();
   Schedule();
 }

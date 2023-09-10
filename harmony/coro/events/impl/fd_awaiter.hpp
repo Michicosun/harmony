@@ -13,18 +13,15 @@ class [[nodiscard]] FdAwaiter : public executors::TaskBase,
                                 public io::IORequest {
   struct FdStopHandler {
     FdAwaiter* fd_awaiter{nullptr};
-    uint64_t fd_id{0};
 
-    FdStopHandler(FdAwaiter* fd_awaiter, uint64_t id)
-        : fd_awaiter{fd_awaiter},
-          fd_id{id} {
+    explicit FdStopHandler(FdAwaiter* fd_awaiter)
+        : fd_awaiter{fd_awaiter} {
     }
 
     void operator()() {
       if (fd_awaiter->state.Cancel()) {
         auto& ios = fd_awaiter->parameters_->scheduler->GetIOEventSource();
-        ios.DeleteIORequest(fd_awaiter->fd, fd_id);
-        fd_awaiter->Schedule();
+        ios.DeleteIORequest(fd_awaiter);
       }
     }
   };
@@ -50,10 +47,10 @@ class [[nodiscard]] FdAwaiter : public executors::TaskBase,
 
     // save fd in epoll and setup cancellation
     auto& ios = parameters_->scheduler->GetIOEventSource();
-    uint64_t fd_id = ios.AddIORequest(this);
+    ios.AddIORequest(this);
 
-    stop_callback_.emplace(parameters_->stop_token, FdStopHandler(this, fd_id));
-    cb_constructed_.Complete();
+    stop_callback_.emplace(parameters_->stop_token, FdStopHandler(this));
+    cb_constructed_.store(true);
   }
 
   io::EventStatus await_resume();
@@ -69,7 +66,7 @@ class [[nodiscard]] FdAwaiter : public executors::TaskBase,
   std::coroutine_handle<> coroutine_{nullptr};
   CoroParameters* parameters_{nullptr};
 
-  threads::MPSCEvent cb_constructed_;
+  std::atomic<bool> cb_constructed_{false};
   std::optional<std::stop_callback<FdStopHandler>> stop_callback_;
 };
 
