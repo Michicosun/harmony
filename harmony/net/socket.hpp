@@ -17,6 +17,8 @@ class TcpSocket {
  public:
   explicit TcpSocket(io::Fd con_fd);
 
+  ~TcpSocket();
+
   coro::Task<Result> AsyncReadSome(std::span<std::byte> buffer);
   coro::Task<Result> AsyncWriteSome(std::span<std::byte> buffer);
 

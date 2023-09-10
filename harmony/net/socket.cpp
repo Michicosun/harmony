@@ -13,6 +13,10 @@ TcpSocket::TcpSocket(io::Fd con_fd)
     : con_fd_{con_fd} {
 }
 
+TcpSocket::~TcpSocket() {
+  close(con_fd_);
+}
+
 coro::Task<TcpSocket::Result> TcpSocket::AsyncReadSome(
     std::span<std::byte> buffer) {
   auto status = co_await coro::FdReady(con_fd_, io::Operation::Read);
