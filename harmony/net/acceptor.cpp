@@ -40,6 +40,8 @@ coro::Task<AcceptInfo> Acceptor::Accept() {
     throw NetError(strerror(errno));
   }
 
+  io::MakeNonblocking(client_fd);
+
   co_return AcceptInfo{
       .fd = client_fd,
       .ip_address = inet_ntoa(client_addr.sin_addr),
@@ -72,6 +74,8 @@ void Acceptor::PrepareListeningFd(size_t port, AddressFamily af) {
   if (listen(lfd_, 5) < 0) {
     throw NetError(strerror(errno));
   }
+
+  io::MakeNonblocking(lfd_);
 }
 
 }  // namespace harmony::net
