@@ -9,6 +9,8 @@
 #include <unordered_map>
 
 #include <harmony/runtime/io/core/epoll_events.hpp>
+#include <harmony/runtime/io/core/event_fd.hpp>
+#include <harmony/runtime/io/core/exceptions.hpp>
 #include <harmony/runtime/io/core/fd.hpp>
 #include <harmony/runtime/io/core/io_request.hpp>
 #include <harmony/threads/spin_lock/spin_lock.hpp>
@@ -31,6 +33,19 @@ class IOEventSource {
  public:
   IOEventSource()
       : epoll_fd_(epoll_create1(EPOLL_CLOEXEC)) {
+    epoll_event ev{
+        .events = EPOLLIN,
+    };
+
+    ev.data.u64 = has_new_requests_.NativeHandle();
+    if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, ev.data.u64, &ev) == -1) {
+      throw EpollError("error while adding fd to epoll");
+    }
+
+    ev.data.u64 = has_cancellation_.NativeHandle();
+    if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, ev.data.u64, &ev) == -1) {
+      throw EpollError("error while adding fd to epoll");
+    }
   }
 
   void Start() {
@@ -110,6 +125,8 @@ class IOEventSource {
   static constexpr size_t kWaitTimeout = 1000;  // 1s
 
   Fd epoll_fd_{-1};
+  EventFd has_new_requests_;
+  EventFd has_cancellation_;
 
   std::thread worker_;
   std::atomic<bool> stopped_{false};

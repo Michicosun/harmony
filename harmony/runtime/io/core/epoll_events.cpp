@@ -1,4 +1,5 @@
 #include <harmony/runtime/io/core/epoll_events.hpp>
+#include <harmony/runtime/io/core/exceptions.hpp>
 
 namespace harmony::io {
 

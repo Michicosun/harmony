@@ -2,13 +2,8 @@
 
 #include <sys/epoll.h>
 #include <cstdint>
-#include <stdexcept>
 
 namespace harmony::io {
-
-class EpollError : std::runtime_error {
-  using std::runtime_error::runtime_error;
-};
 
 enum class Operation {
   Read,
