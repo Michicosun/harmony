@@ -17,8 +17,7 @@ TcpSocket::~TcpSocket() {
   close(con_fd_);
 }
 
-coro::Task<TcpSocket::Result> TcpSocket::AsyncReadSome(
-    std::span<std::byte> buffer) {
+coro::Task<size_t> TcpSocket::AsyncReadSome(std::span<std::byte> buffer) {
   auto status = co_await coro::FdReady(con_fd_, io::Operation::Read);
 
   if (status == io::EventStatus::Error) {
@@ -26,10 +25,7 @@ coro::Task<TcpSocket::Result> TcpSocket::AsyncReadSome(
   }
 
   if (status == io::EventStatus::Closed) {
-    co_return Result{
-        .status = status,
-        .bytes_transferred = 0,
-    };
+    throw NetError("socket was closed from the other side");
   }
 
   int64_t n = read(con_fd_, buffer.data(), buffer.size());
@@ -38,14 +34,10 @@ coro::Task<TcpSocket::Result> TcpSocket::AsyncReadSome(
     throw NetError(strerror(errno));
   }
 
-  co_return Result{
-      .status = status,
-      .bytes_transferred = static_cast<size_t>(n),
-  };
+  co_return n;
 }
 
-coro::Task<TcpSocket::Result> TcpSocket::AsyncWriteSome(
-    std::span<std::byte> buffer) {
+coro::Task<size_t> TcpSocket::AsyncWriteSome(std::span<std::byte> buffer) {
   auto status = co_await coro::FdReady(con_fd_, io::Operation::Write);
 
   if (status == io::EventStatus::Error) {
@@ -53,10 +45,7 @@ coro::Task<TcpSocket::Result> TcpSocket::AsyncWriteSome(
   }
 
   if (status == io::EventStatus::Closed) {
-    co_return Result{
-        .status = status,
-        .bytes_transferred = 0,
-    };
+    throw NetError("socket was closed from the other side");
   }
 
   int64_t n = write(con_fd_, buffer.data(), buffer.size());
@@ -65,10 +54,7 @@ coro::Task<TcpSocket::Result> TcpSocket::AsyncWriteSome(
     throw NetError(strerror(errno));
   }
 
-  co_return Result{
-      .status = status,
-      .bytes_transferred = static_cast<size_t>(n),
-  };
+  co_return n;
 }
 
 }  // namespace harmony::net

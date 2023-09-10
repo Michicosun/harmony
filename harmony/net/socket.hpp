@@ -9,18 +9,13 @@
 namespace harmony::net {
 
 class TcpSocket {
-  struct Result {
-    io::EventStatus status;
-    size_t bytes_transferred;
-  };
-
  public:
   explicit TcpSocket(io::Fd con_fd);
 
   ~TcpSocket();
 
-  coro::Task<Result> AsyncReadSome(std::span<std::byte> buffer);
-  coro::Task<Result> AsyncWriteSome(std::span<std::byte> buffer);
+  coro::Task<size_t> AsyncReadSome(std::span<std::byte> buffer);
+  coro::Task<size_t> AsyncWriteSome(std::span<std::byte> buffer);
 
  private:
   io::Fd con_fd_;
