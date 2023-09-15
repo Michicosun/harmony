@@ -1,4 +1,5 @@
 #include <netinet/in.h>
+#include <sys/socket.h>
 
 #include <harmony/net/net_params.hpp>
 
@@ -10,6 +11,18 @@ int AddressFamilyToNative(AddressFamily af) {
       return AF_INET;
     case AddressFamily::IPv6:
       return AF_INET6;
+    case AddressFamily::Unknown:
+      return AF_UNSPEC;
+  }
+}
+
+AddressFamily AddressFamilyFromNative(int native) {
+  if (native == AF_INET) {
+    return AddressFamily::IPv4;
+  } else if (native == AF_INET6) {
+    return AddressFamily::IPv6;
+  } else {
+    return AddressFamily::Unknown;
   }
 }
 
