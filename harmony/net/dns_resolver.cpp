@@ -10,7 +10,8 @@ using namespace std::chrono_literals;
 
 namespace harmony::net {
 
-coro::Task<ConnectionParams> DnsResolver::Resolve(const std::string& host) {
+coro::Task<ConnectionParams> DnsResolver::Resolve(const std::string& host,
+                                                  AddressFamily family) {
   // first try to get from cache
   if (auto cached_result = co_await TryFetchFromCache(host)) {
     co_return cached_result.value();
@@ -18,8 +19,13 @@ coro::Task<ConnectionParams> DnsResolver::Resolve(const std::string& host) {
 
   // configure request
   struct gaicb req = {};
+  struct addrinfo req_info = {};
   memset(&req, 0, sizeof(req));
+  memset(&req_info, 0, sizeof(req_info));
+
+  req_info.ai_family = AddressFamilyToNative(family);
   req.ar_name = host.c_str();
+  req.ar_request = &req_info;
 
   struct gaicb* req_ptr[] = {&req};
 

@@ -12,7 +12,8 @@ namespace harmony::net {
 
 class DnsResolver {
  public:
-  coro::Task<ConnectionParams> Resolve(const std::string& host);
+  coro::Task<ConnectionParams> Resolve(
+      const std::string& host, AddressFamily family = AddressFamily::IPv4);
 
  private:
   coro::Task<std::optional<ConnectionParams>> TryFetchFromCache(
