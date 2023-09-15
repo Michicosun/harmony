@@ -18,4 +18,7 @@ add_compile_options(-gdwarf-4)
 add_compile_options(-stdlib=libstdc++)
 add_link_options(-stdlib=libstdc++)
 
+# network
+add_link_options(-lanl)
+
 Log("C++ standard: ${CMAKE_CXX_STANDARD}")
