@@ -22,7 +22,7 @@ TEST(Coroutines, TimersSimple) {
   scheduler.Stop();
 }
 
-TEST(Coroutines, TimersParallel) {
+TEST(Coroutines, TimersAll) {
   runtime::Scheduler<executors::ComputeExecutor> scheduler(1);
   scheduler.WithTimer();
   scheduler.Start();
@@ -49,6 +49,33 @@ TEST(Coroutines, TimersParallel) {
 
   auto elapsed_time = timers::Clock::now() - start_time;
   ASSERT_LE(elapsed_time, 550ms);
+
+  scheduler.WaitIdle();
+  scheduler.Stop();
+}
+
+TEST(Coroutines, TimersFirst) {
+  runtime::Scheduler<executors::ComputeExecutor> scheduler(12);
+  scheduler.WithTimer();
+  scheduler.Start();
+
+  auto amain = [&]() -> coro::Task<size_t> {
+    co_await coro::Schedule(scheduler);
+
+    auto long_running_query = []() -> coro::Task<size_t> {
+      co_await coro::SleepFor(10s);
+      co_return 1;
+    };
+
+    auto timeout = []() -> coro::Task<size_t> {
+      co_await coro::SleepFor(500ms);
+      co_return 2;
+    };
+
+    co_return co_await coro::First(long_running_query(), timeout());
+  };
+
+  ASSERT_EQ(coro::Run(amain()), 2);
 
   scheduler.WaitIdle();
   scheduler.Stop();
