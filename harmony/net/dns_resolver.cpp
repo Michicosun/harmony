@@ -1,4 +1,5 @@
 #include <netdb.h>
+#include <cstring>
 
 #include <harmony/net/dns_resolver.hpp>
 

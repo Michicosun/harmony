@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <cstring>
 
 #include <harmony/coro/events/fd_ready.hpp>
 #include <harmony/net/exceptions.hpp>
