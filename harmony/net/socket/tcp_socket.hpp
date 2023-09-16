@@ -21,12 +21,12 @@ class TcpSocket {
 
   template <class... Args>
   coro::Task<size_t> AsyncReadSome(Args&&... args) {
-    return AsyncReadSome(net::Buffer(std::forward<Args>(args)...));
+    return AsyncReadSome(Buffer(std::forward<Args>(args)...));
   }
 
   template <class... Args>
   coro::Task<size_t> AsyncWriteSome(Args&&... args) {
-    return AsyncWriteSome(net::Buffer(std::forward<Args>(args)...));
+    return AsyncWriteSome(Buffer(std::forward<Args>(args)...));
   }
 
  private:
