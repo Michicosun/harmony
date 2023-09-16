@@ -46,8 +46,9 @@ void TimerEventSource::AddNewTimers() {
   TimerBase* timer = new_timers_.ExtractAll();
 
   while (timer != nullptr) {
+    TimerBase* next = Unwrap(timer->next);
     timers_.push({timer, timer->id});
-    timer = Unwrap(timer->next);
+    timer = next;
   }
 }
 
@@ -55,10 +56,13 @@ void TimerEventSource::DeleteCancelledTimers() {
   TimerBase* timer = timers_to_cancel_.ExtractAll();
 
   while (timer != nullptr) {
+    TimerBase* next = Unwrap(timer->next);
+
     deleted_timers_.insert(timer->id);
     timer->OnFinish();
-    timer = Unwrap(timer->next);
     running_timers_.Done();
+
+    timer = next;
   }
 }
 

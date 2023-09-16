@@ -79,8 +79,9 @@ void IOEventSource::AddNewRequests() {
   IORequest* request = new_requests_.ExtractAll();
 
   while (request != nullptr) {
+    IORequest* next = Unwrap(request->next);
     SubmitIORequestToEpoll(request);
-    request = Unwrap(request->next);
+    request = next;
   }
 }
 
@@ -92,10 +93,13 @@ void IOEventSource::DeleteCancelledRequests() {
   IORequest* request = requests_to_cancel_.ExtractAll();
 
   while (request != nullptr) {
+    IORequest* next = Unwrap(request->next);
+
     RemoveIORequestFromEpoll(request);
     request->OnFinish();
-    request = Unwrap(request->next);
     running_requests_.Done();
+
+    request = next;
   }
 }
 
