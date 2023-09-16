@@ -14,7 +14,7 @@ coro::Task<> worker(net::AcceptInfo ai) {
 
   while (true) {
     size_t n = co_await socket.AsyncReadSome(buffer);
-    co_await socket.AsyncWriteSome({buffer.begin(), buffer.begin() + n});
+    co_await socket.AsyncWriteSome(buffer, n);
   }
 
   co_return {};

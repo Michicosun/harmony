@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <cstddef>
 #include <cstring>
 
 #include <harmony/coro/events/fd_ready.hpp>
@@ -81,7 +82,7 @@ coro::Task<> BaseSocket::Connect(ConnectionParams params, size_t port) {
   co_return {};
 }
 
-coro::Task<size_t> TcpSocket::AsyncReadSome(std::span<std::byte> buffer) {
+coro::Task<size_t> TcpSocket::AsyncReadSome(Buffer buffer) {
   if (!con_fd_.has_value()) {
     throw NetError("socket not connected to endpoint");
   }
@@ -96,7 +97,7 @@ coro::Task<size_t> TcpSocket::AsyncReadSome(std::span<std::byte> buffer) {
     throw NetError("socket was closed from the other side");
   }
 
-  int64_t n = read(con_fd_.value(), buffer.data(), buffer.size());
+  int64_t n = read(con_fd_.value(), buffer.Data(), buffer.Size());
 
   if (n < 0) {
     throw NetError(strerror(errno));
@@ -105,7 +106,7 @@ coro::Task<size_t> TcpSocket::AsyncReadSome(std::span<std::byte> buffer) {
   co_return n;
 }
 
-coro::Task<size_t> TcpSocket::AsyncWriteSome(std::span<std::byte> buffer) {
+coro::Task<size_t> TcpSocket::AsyncWriteSome(Buffer buffer) {
   if (!con_fd_.has_value()) {
     throw NetError("socket not connected to endpoint");
   }
@@ -120,7 +121,7 @@ coro::Task<size_t> TcpSocket::AsyncWriteSome(std::span<std::byte> buffer) {
     throw NetError("socket was closed from the other side");
   }
 
-  int64_t n = write(con_fd_.value(), buffer.data(), buffer.size());
+  int64_t n = write(con_fd_.value(), buffer.Data(), buffer.Size());
 
   if (n < 0) {
     throw NetError(strerror(errno));
