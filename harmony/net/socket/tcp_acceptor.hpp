@@ -12,11 +12,11 @@ struct AcceptInfo {
   size_t port;
 };
 
-class Acceptor {
+class TcpAcceptor {
  public:
-  explicit Acceptor(size_t port, AddressFamily af = AddressFamily::IPv4);
+  explicit TcpAcceptor(size_t port, AddressFamily af = AddressFamily::IPv4);
 
-  ~Acceptor();
+  ~TcpAcceptor();
 
   coro::Task<AcceptInfo> Accept();
 

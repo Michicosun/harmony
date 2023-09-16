@@ -1,9 +1,8 @@
 #include <netdb.h>
 #include <cstring>
 
-#include <harmony/net/dns_resolver.hpp>
-
 #include <harmony/coro/events/sleep_for.hpp>
+#include <harmony/net/dns/resolver.hpp>
 #include <harmony/net/exceptions.hpp>
 #include <harmony/net/net_params.hpp>
 

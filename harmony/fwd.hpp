@@ -31,6 +31,6 @@
 #include <harmony/coro/events/sleep_for.hpp>
 
 // network
-#include <harmony/net/acceptor.hpp>
-#include <harmony/net/dns_resolver.hpp>
+#include <harmony/net/dns/resolver.hpp>
+#include <harmony/net/socket/tcp_acceptor.hpp>
 #include <harmony/net/socket/tcp_socket.hpp>

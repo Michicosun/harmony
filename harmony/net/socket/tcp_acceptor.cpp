@@ -5,21 +5,21 @@
 #include <cstring>
 
 #include <harmony/coro/events/fd_ready.hpp>
-#include <harmony/net/acceptor.hpp>
 #include <harmony/net/exceptions.hpp>
+#include <harmony/net/socket/tcp_acceptor.hpp>
 #include <harmony/runtime/io/core/fd.hpp>
 
 namespace harmony::net {
 
-Acceptor::Acceptor(size_t port, AddressFamily af) {
+TcpAcceptor::TcpAcceptor(size_t port, AddressFamily af) {
   PrepareListeningFd(port, af);
 }
 
-Acceptor::~Acceptor() {
+TcpAcceptor::~TcpAcceptor() {
   close(lfd_);
 }
 
-coro::Task<AcceptInfo> Acceptor::Accept() {
+coro::Task<AcceptInfo> TcpAcceptor::Accept() {
   struct sockaddr_in client_addr;
   socklen_t client_addr_len = sizeof(client_addr);
 
@@ -49,7 +49,7 @@ coro::Task<AcceptInfo> Acceptor::Accept() {
   };
 }
 
-void Acceptor::PrepareListeningFd(size_t port, AddressFamily af) {
+void TcpAcceptor::PrepareListeningFd(size_t port, AddressFamily af) {
   lfd_ = socket(AddressFamilyToNative(af), SOCK_STREAM, 0);
   if (lfd_ < 0) {
     throw NetError(strerror(errno));

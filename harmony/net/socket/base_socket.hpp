@@ -7,13 +7,12 @@
 namespace harmony::net {
 
 class BaseSocket {
- public:
+ protected:
   BaseSocket() = default;
   explicit BaseSocket(io::Fd con_fd);
 
   ~BaseSocket();
 
- protected:
   enum class SocketType {
     Tcp,
     Udp,
