@@ -12,19 +12,18 @@ namespace harmony::net {
 
 class DnsResolver {
  public:
-  coro::Task<ConnectionParams> Resolve(
-      const std::string& host, AddressFamily family = AddressFamily::IPv4);
+  coro::Task<AddressInfo> Resolve(const std::string& host,
+                                  AddressFamily family = AddressFamily::IPv4);
 
  private:
-  coro::Task<std::optional<ConnectionParams>> TryFetchFromCache(
+  coro::Task<std::optional<AddressInfo>> TryFetchFromCache(
       const std::string& host);
 
-  coro::Task<> SaveToCache(const std::string& host,
-                           const ConnectionParams& params);
+  coro::Task<> SaveToCache(const std::string& host, const AddressInfo& params);
 
  private:
   coro::Mutex mutex_;
-  std::unordered_map<std::string, ConnectionParams> cache_;
+  std::unordered_map<std::string, AddressInfo> cache_;
 };
 
 }  // namespace harmony::net

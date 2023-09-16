@@ -10,8 +10,8 @@ using namespace std::chrono_literals;
 
 namespace harmony::net {
 
-coro::Task<ConnectionParams> DnsResolver::Resolve(const std::string& host,
-                                                  AddressFamily family) {
+coro::Task<AddressInfo> DnsResolver::Resolve(const std::string& host,
+                                             AddressFamily family) {
   // first try to get from cache
   if (auto cached_result = co_await TryFetchFromCache(host)) {
     co_return cached_result.value();
@@ -57,9 +57,9 @@ coro::Task<ConnectionParams> DnsResolver::Resolve(const std::string& host,
     throw NetError(gai_strerror(gni_status));
   }
 
-  ConnectionParams params{
-      .ip_address = ip_address,
+  AddressInfo params{
       .address_family = AddressFamilyFromNative(result->ai_family),
+      .ip_address = ip_address,
   };
 
   // save to cache
@@ -67,7 +67,7 @@ coro::Task<ConnectionParams> DnsResolver::Resolve(const std::string& host,
   co_return params;
 }
 
-coro::Task<std::optional<ConnectionParams>> DnsResolver::TryFetchFromCache(
+coro::Task<std::optional<AddressInfo>> DnsResolver::TryFetchFromCache(
     const std::string& host) {
   auto lock = co_await mutex_.ScopedLock();
 
@@ -79,7 +79,7 @@ coro::Task<std::optional<ConnectionParams>> DnsResolver::TryFetchFromCache(
 }
 
 coro::Task<> DnsResolver::SaveToCache(const std::string& host,
-                                      const ConnectionParams& params) {
+                                      const AddressInfo& params) {
   auto lock = co_await mutex_.ScopedLock();
   cache_[host] = params;
   co_return {};
