@@ -20,8 +20,8 @@ TcpAcceptor::~TcpAcceptor() {
 }
 
 coro::Task<AcceptInfo> TcpAcceptor::Accept() {
-  struct sockaddr_in client_addr;
-  socklen_t client_addr_len = sizeof(client_addr);
+  struct sockaddr_storage ss;
+  socklen_t addrlen = sizeof(ss);
 
   auto status = co_await coro::FdReady(lfd_, io::Operation::Read);
 
@@ -33,8 +33,7 @@ coro::Task<AcceptInfo> TcpAcceptor::Accept() {
     throw NetError("descriptor is closed");
   }
 
-  int client_fd =
-      accept(lfd_, (struct sockaddr*)&client_addr, &client_addr_len);
+  int client_fd = accept(lfd_, (struct sockaddr*)&ss, &addrlen);
 
   if (client_fd < 0) {
     throw NetError(strerror(errno));
@@ -42,11 +41,44 @@ coro::Task<AcceptInfo> TcpAcceptor::Accept() {
 
   io::MakeNonblocking(client_fd);
 
-  co_return AcceptInfo{
-      .fd = client_fd,
-      .ip_address = inet_ntoa(client_addr.sin_addr),
-      .port = client_addr.sin_port,
-  };
+  switch (ss.ss_family) {
+    case AF_INET: {
+      struct sockaddr_in* addr = (struct sockaddr_in*)&ss;
+
+      char ip_address_buffer[INET_ADDRSTRLEN] = {0};
+      auto* ptr = inet_ntop(AF_INET, &addr->sin_addr, ip_address_buffer,
+                            INET_ADDRSTRLEN);
+
+      if (ptr == nullptr) {
+        throw NetError(strerror(errno));
+      }
+
+      co_return AcceptInfo{
+          .fd = client_fd,
+          .ip_address = ip_address_buffer,
+          .port = addr->sin_port,
+      };
+    }
+    case AF_INET6: {
+      struct sockaddr_in6* addr = (struct sockaddr_in6*)&ss;
+
+      char ip_address_buffer[INET6_ADDRSTRLEN] = {0};
+      auto* ptr = inet_ntop(AF_INET6, &addr->sin6_addr, ip_address_buffer,
+                            INET6_ADDRSTRLEN);
+
+      if (ptr == nullptr) {
+        throw NetError(strerror(errno));
+      }
+
+      co_return AcceptInfo{
+          .fd = client_fd,
+          .ip_address = ip_address_buffer,
+          .port = addr->sin6_port,
+      };
+    }
+  }
+
+  throw NetError("incorrect address family");
 }
 
 void TcpAcceptor::PrepareListeningFd(size_t port, AddressFamily af) {
@@ -61,13 +93,31 @@ void TcpAcceptor::PrepareListeningFd(size_t port, AddressFamily af) {
     throw NetError(strerror(errno));
   }
 
-  struct sockaddr_in listen_addr = {};
-  memset(&listen_addr, 0, sizeof(listen_addr));
-  listen_addr.sin_family = AddressFamilyToNative(af);
-  listen_addr.sin_addr.s_addr = INADDR_ANY;
-  listen_addr.sin_port = htons(port);
+  struct sockaddr_storage ss = {};
+  socklen_t addrlen;
 
-  if (bind(lfd_, (struct sockaddr*)&listen_addr, sizeof(listen_addr)) < 0) {
+  int family = AddressFamilyToNative(af);
+  switch (family) {
+    case AF_INET: {
+      struct sockaddr_in* addr = (struct sockaddr_in*)&ss;
+      addr->sin_family = AF_INET;
+      addr->sin_port = htons(port);
+      addr->sin_addr.s_addr = INADDR_ANY;
+      addrlen = sizeof(struct sockaddr_in);
+      break;
+    }
+
+    case AF_INET6: {
+      struct sockaddr_in6* addr = (struct sockaddr_in6*)&ss;
+      addr->sin6_family = AF_INET6;
+      addr->sin6_port = htons(port);
+      addr->sin6_addr = in6addr_any;
+      addrlen = sizeof(struct sockaddr_in6);
+      break;
+    }
+  }
+
+  if (bind(lfd_, (struct sockaddr*)&ss, addrlen) < 0) {
     throw NetError(strerror(errno));
   }
 
