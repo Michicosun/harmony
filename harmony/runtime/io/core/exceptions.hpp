@@ -16,4 +16,8 @@ class EventFdError : IOError {
   using IOError::IOError;
 };
 
+class FDError : IOError {
+  using IOError::IOError;
+};
+
 }  // namespace harmony::io
