@@ -56,7 +56,7 @@ void UdpSocket::Bind(size_t port) {
   }
 }
 
-coro::Task<DatagramInfo> UdpSocket::AsyncReceive(Buffer buffer) {
+coro::Task<DatagramInfo> UdpSocket::Receive(Buffer buffer) {
   auto status = co_await coro::FdReady(con_fd_, io::Operation::Read);
 
   if (status == io::EventStatus::Error) {
@@ -79,7 +79,7 @@ coro::Task<DatagramInfo> UdpSocket::AsyncReceive(Buffer buffer) {
   };
 }
 
-coro::Task<size_t> UdpSocket::AsyncSend(AddressInfo receiver, Buffer buffer) {
+coro::Task<size_t> UdpSocket::Send(AddressInfo receiver, Buffer buffer) {
   auto status = co_await coro::FdReady(con_fd_, io::Operation::Write);
 
   if (status == io::EventStatus::Error) {

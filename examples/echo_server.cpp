@@ -7,14 +7,15 @@
 using namespace harmony;  // NOLINT
 
 coro::Task<> worker(net::AcceptInfo ai) {
-  std::cout << "connected " << ai.ip_address << ":" << ai.port << std::endl;
+  auto& ci = ai.con_info;
+  std::cout << "connected " << ci.ip_address << ":" << ci.port << std::endl;
 
   net::TcpSocket socket(ai.fd);
   std::array<std::byte, 1024> buffer;
 
   while (true) {
-    size_t n = co_await socket.AsyncReadSome(buffer);
-    co_await socket.AsyncWriteSome(buffer, n);
+    size_t n = co_await socket.ReadSome(buffer);
+    co_await socket.WriteSome(buffer, n);
   }
 
   co_return {};
@@ -28,7 +29,7 @@ int main() {
   auto amain = [&]() -> coro::Task<> {
     co_await coro::Schedule(scheduler);
 
-    net::Acceptor acceptor(2020);
+    net::TcpAcceptor acceptor(2020);
     coro::TaskGroup tg;
 
     while (true) {

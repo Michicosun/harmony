@@ -22,18 +22,18 @@ class UdpSocket {
   void Bind(size_t port);
 
   template <class... Args>
-  coro::Task<DatagramInfo> AsyncReceive(Args&&... args) {
-    return AsyncReceive(Buffer(std::forward<Args>(args)...));
+  coro::Task<DatagramInfo> Receive(Args&&... args) {
+    return Receive(Buffer(std::forward<Args>(args)...));
   }
 
   template <class... Args>
-  coro::Task<size_t> AsyncSend(AddressInfo receiver, Args&&... args) {
-    return AsyncSend(std::move(receiver), Buffer(std::forward<Args>(args)...));
+  coro::Task<size_t> Send(AddressInfo receiver, Args&&... args) {
+    return Send(std::move(receiver), Buffer(std::forward<Args>(args)...));
   }
 
  private:
-  coro::Task<DatagramInfo> AsyncReceive(Buffer buffer);
-  coro::Task<size_t> AsyncSend(AddressInfo receiver, Buffer buffer);
+  coro::Task<DatagramInfo> Receive(Buffer buffer);
+  coro::Task<size_t> Send(AddressInfo receiver, Buffer buffer);
 
  private:
   AddressFamily family_{AddressFamily::IPv4};

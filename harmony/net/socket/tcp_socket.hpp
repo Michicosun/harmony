@@ -20,18 +20,18 @@ class TcpSocket {
   coro::Task<> Connect(std::string host, size_t port);
 
   template <class... Args>
-  coro::Task<size_t> AsyncReadSome(Args&&... args) {
-    return AsyncReadSome(Buffer(std::forward<Args>(args)...));
+  coro::Task<size_t> ReadSome(Args&&... args) {
+    return ReadSome(Buffer(std::forward<Args>(args)...));
   }
 
   template <class... Args>
-  coro::Task<size_t> AsyncWriteSome(Args&&... args) {
-    return AsyncWriteSome(Buffer(std::forward<Args>(args)...));
+  coro::Task<size_t> WriteSome(Args&&... args) {
+    return WriteSome(Buffer(std::forward<Args>(args)...));
   }
 
  private:
-  coro::Task<size_t> AsyncReadSome(Buffer buffer);
-  coro::Task<size_t> AsyncWriteSome(Buffer buffer);
+  coro::Task<size_t> ReadSome(Buffer buffer);
+  coro::Task<size_t> WriteSome(Buffer buffer);
 
  private:
   std::optional<AddressFamily> family_{AddressFamily::IPv4};

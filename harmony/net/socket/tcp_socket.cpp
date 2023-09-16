@@ -84,7 +84,7 @@ coro::Task<> TcpSocket::Connect(std::string host, size_t port) {
   co_return {};
 }
 
-coro::Task<size_t> TcpSocket::AsyncReadSome(Buffer buffer) {
+coro::Task<size_t> TcpSocket::ReadSome(Buffer buffer) {
   auto status = co_await coro::FdReady(con_fd_, io::Operation::Read);
 
   if (status == io::EventStatus::Error) {
@@ -104,7 +104,7 @@ coro::Task<size_t> TcpSocket::AsyncReadSome(Buffer buffer) {
   co_return n;
 }
 
-coro::Task<size_t> TcpSocket::AsyncWriteSome(Buffer buffer) {
+coro::Task<size_t> TcpSocket::WriteSome(Buffer buffer) {
   auto status = co_await coro::FdReady(con_fd_, io::Operation::Write);
 
   if (status == io::EventStatus::Error) {
