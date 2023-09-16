@@ -1,11 +1,10 @@
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <cstddef>
 #include <cstring>
 
 #include <harmony/coro/events/fd_ready.hpp>
 #include <harmony/net/exceptions.hpp>
-#include <harmony/net/socket.hpp>
+#include <harmony/net/socket/base_socket.hpp>
 
 namespace harmony::net {
 
@@ -19,7 +18,17 @@ BaseSocket::~BaseSocket() {
   }
 }
 
-coro::Task<> BaseSocket::Connect(ConnectionParams params, size_t port) {
+int BaseSocket::SocketTypeToNative(SocketType type) {
+  switch (type) {
+    case SocketType::Tcp:
+      return SOCK_STREAM;
+    case SocketType::Udp:
+      return SOCK_DGRAM;
+  }
+}
+
+coro::Task<> BaseSocket::Connect(SocketType type, ConnectionParams params,
+                                 size_t port) {
   if (con_fd_.has_value()) {
     throw NetError("socket is already connected to endpoint");
   }
@@ -49,7 +58,7 @@ coro::Task<> BaseSocket::Connect(ConnectionParams params, size_t port) {
   }
 
   // create socket
-  con_fd_ = socket(family, SOCK_STREAM, 0);
+  con_fd_ = socket(family, SocketTypeToNative(type), 0);
   if (con_fd_ < 0) {
     throw NetError(strerror(errno));
   }
@@ -80,54 +89,6 @@ coro::Task<> BaseSocket::Connect(ConnectionParams params, size_t port) {
   }
 
   co_return {};
-}
-
-coro::Task<size_t> TcpSocket::AsyncReadSome(Buffer buffer) {
-  if (!con_fd_.has_value()) {
-    throw NetError("socket not connected to endpoint");
-  }
-
-  auto status = co_await coro::FdReady(con_fd_.value(), io::Operation::Read);
-
-  if (status == io::EventStatus::Error) {
-    throw NetError("error while polling descriptor");
-  }
-
-  if (status == io::EventStatus::Closed) {
-    throw NetError("socket was closed from the other side");
-  }
-
-  int64_t n = read(con_fd_.value(), buffer.Data(), buffer.Size());
-
-  if (n < 0) {
-    throw NetError(strerror(errno));
-  }
-
-  co_return n;
-}
-
-coro::Task<size_t> TcpSocket::AsyncWriteSome(Buffer buffer) {
-  if (!con_fd_.has_value()) {
-    throw NetError("socket not connected to endpoint");
-  }
-
-  auto status = co_await coro::FdReady(con_fd_.value(), io::Operation::Write);
-
-  if (status == io::EventStatus::Error) {
-    throw NetError("error while polling descriptor");
-  }
-
-  if (status == io::EventStatus::Closed) {
-    throw NetError("socket was closed from the other side");
-  }
-
-  int64_t n = write(con_fd_.value(), buffer.Data(), buffer.Size());
-
-  if (n < 0) {
-    throw NetError(strerror(errno));
-  }
-
-  co_return n;
 }
 
 }  // namespace harmony::net

@@ -32,4 +32,5 @@
 
 // network
 #include <harmony/net/acceptor.hpp>
-#include <harmony/net/socket.hpp>
+#include <harmony/net/dns_resolver.hpp>
+#include <harmony/net/socket/tcp_socket.hpp>
