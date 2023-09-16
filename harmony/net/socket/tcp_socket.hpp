@@ -1,15 +1,23 @@
 #pragma once
 
+#include <optional>
+
+#include <harmony/coro/core/task.hpp>
 #include <harmony/net/buffer.hpp>
-#include <harmony/net/socket/base_socket.hpp>
+#include <harmony/net/net_params.hpp>
+#include <harmony/runtime/io/core/fd.hpp>
 
 namespace harmony::net {
 
-class TcpSocket : public BaseSocket {
+class TcpSocket {
  public:
-  using BaseSocket::BaseSocket;
+  explicit TcpSocket(AddressFamily family);
+  explicit TcpSocket(io::Fd con_fd);
 
-  coro::Task<> Connect(ConnectionParams params, size_t port);
+  ~TcpSocket();
+
+ public:
+  coro::Task<> Connect(std::string host, size_t port);
 
   template <class... Args>
   coro::Task<size_t> AsyncReadSome(Args&&... args) {
@@ -24,6 +32,10 @@ class TcpSocket : public BaseSocket {
  private:
   coro::Task<size_t> AsyncReadSome(Buffer buffer);
   coro::Task<size_t> AsyncWriteSome(Buffer buffer);
+
+ private:
+  std::optional<AddressFamily> family_{AddressFamily::IPv4};
+  io::Fd con_fd_{-1};
 };
 
 }  // namespace harmony::net
