@@ -76,8 +76,14 @@ class Scheduler : public IScheduler {
   }
 
   void WaitIdle() {
-    io_event_source_->WaitIdle();
-    timer_event_source_->WaitIdle();
+    if (io_event_source_.has_value()) {
+      io_event_source_->WaitIdle();
+    }
+
+    if (timer_event_source_.has_value()) {
+      timer_event_source_->WaitIdle();
+    }
+
     executor_.WaitIdle();
   }
 
