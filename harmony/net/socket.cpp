@@ -8,17 +8,17 @@
 
 namespace harmony::net {
 
-TcpSocket::TcpSocket(io::Fd con_fd)
+BaseSocket::BaseSocket(io::Fd con_fd)
     : con_fd_{con_fd} {
 }
 
-TcpSocket::~TcpSocket() {
+BaseSocket::~BaseSocket() {
   if (con_fd_.has_value()) {
     close(con_fd_.value());
   }
 }
 
-coro::Task<> TcpSocket::Connect(ConnectionParams params, size_t port) {
+coro::Task<> BaseSocket::Connect(ConnectionParams params, size_t port) {
   if (con_fd_.has_value()) {
     throw NetError("socket is already connected to endpoint");
   }

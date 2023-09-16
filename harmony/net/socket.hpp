@@ -9,20 +9,25 @@
 
 namespace harmony::net {
 
-class TcpSocket {
+class BaseSocket {
  public:
-  TcpSocket() = default;
-  explicit TcpSocket(io::Fd con_fd);
+  BaseSocket() = default;
+  explicit BaseSocket(io::Fd con_fd);
 
-  ~TcpSocket();
+  ~BaseSocket();
 
   coro::Task<> Connect(ConnectionParams params, size_t port);
 
+ protected:
+  std::optional<io::Fd> con_fd_;
+};
+
+class TcpSocket : public BaseSocket {
+ public:
+  using BaseSocket::BaseSocket;
+
   coro::Task<size_t> AsyncReadSome(std::span<std::byte> buffer);
   coro::Task<size_t> AsyncWriteSome(std::span<std::byte> buffer);
-
- private:
-  std::optional<io::Fd> con_fd_;
 };
 
 }  // namespace harmony::net
