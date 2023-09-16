@@ -29,6 +29,7 @@ int main() {
   // will return 2, long running query cancelled
   std::cout << "RESULT: " << coro::Run(amain()) << std::endl;
 
+  scheduler.WaitIdle();
   scheduler.Stop();
   return 0;
 }
