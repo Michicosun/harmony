@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <queue>
 #include <thread>
+#include <unordered_set>
 
 #include <harmony/runtime/timers/core/deadline.hpp>
 #include <harmony/runtime/timers/core/timer.hpp>
@@ -15,6 +16,7 @@ namespace harmony::timers {
 class TimerEventSource {
   struct TimerHandle {
     TimerBase* timer{nullptr};
+    uint64_t id{0};
 
     bool operator<(const TimerHandle& th) const {
       return timer->deadline > th.timer->deadline;
@@ -61,7 +63,7 @@ class TimerEventSource {
     TimerBase* timer = new_timers_.ExtractAll();
 
     while (timer != nullptr) {
-      timers_.push({timer});
+      timers_.push({timer, timer->id});
       timer = Unwrap(timer->next);
     }
   }
@@ -70,6 +72,7 @@ class TimerEventSource {
     TimerBase* timer = timers_to_cancel_.ExtractAll();
 
     while (timer != nullptr) {
+      deleted_timers_.insert(timer->id);
       timer->OnFinish();
       timer = Unwrap(timer->next);
     }
@@ -82,6 +85,13 @@ class TimerEventSource {
     while (!timers_.empty() && processed < kMaxBatchSize) {
       const auto& timer_handle = timers_.top();
       TimerBase* timer = timer_handle.timer;
+      uint64_t id = timer_handle.id;
+
+      if (auto it = deleted_timers_.find(id); it != deleted_timers_.end()) {
+        deleted_timers_.erase(it);  // timer is already deleted -> skipping
+        timers_.pop();
+        continue;
+      }
 
       if (timer->deadline > now) {
         break;
@@ -109,6 +119,7 @@ class TimerEventSource {
 
   support::BatchLockFreeQueue<TimerBase> new_timers_;
   support::BatchLockFreeQueue<TimerBase> timers_to_cancel_;
+  std::unordered_set<uint64_t> deleted_timers_;
 
   std::priority_queue<TimerHandle> timers_;
   std::atomic<uint64_t> next_free_id_{0};

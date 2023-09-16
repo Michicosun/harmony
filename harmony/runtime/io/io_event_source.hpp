@@ -67,9 +67,9 @@ class IOEventSource {
  private:
   void WorkerRoutine() {
     while (!stopped_.load()) {
-      GrabIOEventsBatch();
       AddNewRequests();
       DeleteCancelledRequests();
+      GrabIOEventsBatch();
       ProcessEvents();
     }
   }
