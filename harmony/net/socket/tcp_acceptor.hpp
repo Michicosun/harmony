@@ -7,9 +7,8 @@
 namespace harmony::net {
 
 struct AcceptInfo {
+  AddressInfo con_info;
   io::Fd fd;
-  std::string ip_address;
-  size_t port;
 };
 
 class TcpAcceptor {

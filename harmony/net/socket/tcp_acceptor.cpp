@@ -1,6 +1,4 @@
-#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <cstring>
 
@@ -41,44 +39,10 @@ coro::Task<AcceptInfo> TcpAcceptor::Accept() {
 
   io::MakeNonblocking(client_fd);
 
-  switch (ss.ss_family) {
-    case AF_INET: {
-      struct sockaddr_in* addr = (struct sockaddr_in*)&ss;
-
-      char ip_address_buffer[INET_ADDRSTRLEN] = {0};
-      auto* ptr = inet_ntop(AF_INET, &addr->sin_addr, ip_address_buffer,
-                            INET_ADDRSTRLEN);
-
-      if (ptr == nullptr) {
-        throw NetError(strerror(errno));
-      }
-
-      co_return AcceptInfo{
-          .fd = client_fd,
-          .ip_address = ip_address_buffer,
-          .port = addr->sin_port,
-      };
-    }
-    case AF_INET6: {
-      struct sockaddr_in6* addr = (struct sockaddr_in6*)&ss;
-
-      char ip_address_buffer[INET6_ADDRSTRLEN] = {0};
-      auto* ptr = inet_ntop(AF_INET6, &addr->sin6_addr, ip_address_buffer,
-                            INET6_ADDRSTRLEN);
-
-      if (ptr == nullptr) {
-        throw NetError(strerror(errno));
-      }
-
-      co_return AcceptInfo{
-          .fd = client_fd,
-          .ip_address = ip_address_buffer,
-          .port = addr->sin6_port,
-      };
-    }
-  }
-
-  throw NetError("incorrect address family");
+  co_return AcceptInfo{
+      .con_info = AddressInfoFromStorage(std::move(ss)),
+      .fd = client_fd,
+  };
 }
 
 void TcpAcceptor::PrepareListeningFd(size_t port, AddressFamily af) {
