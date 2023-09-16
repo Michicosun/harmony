@@ -32,6 +32,10 @@ void IOEventSource::Start() {
   });
 }
 
+void IOEventSource::WaitIdle() {
+  running_requests_.Wait();
+}
+
 void IOEventSource::Stop() {
   stopped_.store(true);
   worker_.join();
@@ -43,6 +47,7 @@ void IOEventSource::AddIORequest(IORequest* request) {
   request->ev.events =
       OperationToEvent(request->operation) | EPOLLONESHOT | EPOLLRDHUP;
 
+  running_requests_.Add(1);
   new_requests_.Push(request);
   has_new_requests_.Signal();
 }
@@ -90,6 +95,7 @@ void IOEventSource::DeleteCancelledRequests() {
     RemoveIORequestFromEpoll(request);
     request->OnFinish();
     request = Unwrap(request->next);
+    running_requests_.Done();
   }
 }
 
@@ -108,6 +114,7 @@ void IOEventSource::ProcessEvents() {
       RemoveIORequestFromEpoll(request);
       request->status = EventToStatus(event.events);
       request->OnFinish();
+      running_requests_.Done();
     }
   }
 }

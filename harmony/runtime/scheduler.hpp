@@ -76,6 +76,8 @@ class Scheduler : public IScheduler {
   }
 
   void WaitIdle() {
+    io_event_source_->WaitIdle();
+    timer_event_source_->WaitIdle();
     executor_.WaitIdle();
   }
 

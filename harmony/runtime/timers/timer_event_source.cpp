@@ -8,6 +8,10 @@ void TimerEventSource::Start() {
   });
 }
 
+void TimerEventSource::WaitIdle() {
+  running_timers_.Wait();
+}
+
 void TimerEventSource::Stop() {
   stopped_.store(true);
   worker_.join();
@@ -16,6 +20,8 @@ void TimerEventSource::Stop() {
 void TimerEventSource::AddTimer(TimerBase* timer, Deadline deadline) {
   timer->id = next_free_id_.fetch_add(1);
   timer->deadline = deadline;
+
+  running_timers_.Add(1);
   new_timers_.Push(timer);
 }
 
@@ -52,6 +58,7 @@ void TimerEventSource::DeleteCancelledTimers() {
     deleted_timers_.insert(timer->id);
     timer->OnFinish();
     timer = Unwrap(timer->next);
+    running_timers_.Done();
   }
 }
 
@@ -76,6 +83,7 @@ void TimerEventSource::ProcessTimers() {
 
     if (timer->state.Finish()) {
       timer->OnFinish();
+      running_timers_.Done();
       ++processed;
     }
 

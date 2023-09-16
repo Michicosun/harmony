@@ -7,6 +7,7 @@
 #include <harmony/runtime/timers/core/deadline.hpp>
 #include <harmony/runtime/timers/core/timer.hpp>
 #include <harmony/support/queues/batch_lock_free_queue.hpp>
+#include <harmony/threads/wait_group/wait_group.hpp>
 
 namespace harmony::timers {
 
@@ -22,6 +23,7 @@ class TimerEventSource {
 
  public:
   void Start();
+  void WaitIdle();
   void Stop();
 
   void AddTimer(TimerBase* timer, Deadline deadline);
@@ -43,6 +45,7 @@ class TimerEventSource {
 
   std::thread worker_;
   std::atomic<bool> stopped_{false};
+  threads::WaitGroup running_timers_;
 
   support::BatchLockFreeQueue<TimerBase> new_timers_;
   support::BatchLockFreeQueue<TimerBase> timers_to_cancel_;

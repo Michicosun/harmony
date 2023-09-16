@@ -8,6 +8,7 @@
 #include <harmony/runtime/io/core/fd.hpp>
 #include <harmony/runtime/io/core/io_request.hpp>
 #include <harmony/support/queues/batch_lock_free_queue.hpp>
+#include <harmony/threads/wait_group/wait_group.hpp>
 
 namespace harmony::io {
 
@@ -16,6 +17,7 @@ class IOEventSource {
   IOEventSource();
 
   void Start();
+  void WaitIdle();
   void Stop();
 
   void AddIORequest(IORequest* request);
@@ -38,6 +40,7 @@ class IOEventSource {
   static constexpr size_t kWaitTimeout = 1000;  // 1s
 
   Fd epoll_fd_{-1};
+  threads::WaitGroup running_requests_;
 
   EventFd has_new_requests_;
   support::BatchLockFreeQueue<IORequest> new_requests_;
