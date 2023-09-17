@@ -34,3 +34,4 @@
 #include <harmony/net/dns/resolver.hpp>
 #include <harmony/net/socket/tcp_acceptor.hpp>
 #include <harmony/net/socket/tcp_socket.hpp>
+#include <harmony/net/socket/udp_socket.hpp>
