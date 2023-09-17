@@ -11,5 +11,7 @@ endfunction()
 Log("Configuring examples")
 
 MakeExample(sync)
-MakeExample(echo_server)
+MakeExample(tcp_echo_server)
+MakeExample(udp_echo_server)
 MakeExample(fallback)
+MakeExample(dns_resolver)
